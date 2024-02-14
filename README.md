@@ -16,7 +16,7 @@ RibbitRadar is a software tool designed to accurately identify the presence of t
 
 ## Getting Started
 
-To use RibbitRadar, download the latest release from the [Releases](https://github.com/YOUR_GITHUB_USERNAME/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies.
+To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies.
 
 ### Prerequisites
 
