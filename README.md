@@ -45,22 +45,18 @@ To use RibbitRadar, download the latest release from the [Releases](https://gith
 
 The core of RibbitRadar lies within its ability to preprocess audio files, run them through the AST model, and output detailed analysis including detection times and environmental metadata in an Excel file.
 
-## Examples
+## Future Development
 
-- [Solo Rana Draytonii Call](https://example.com)
-- [Rana Draytonii Amongst Noise](https://example.com)
-
-## Ideas for Improvement
-
-- Enhance frequency range filtering to focus on Rana Draytonii's vocalization frequencies.
 - Expand the model to detect additional species relevant to Rana Draytonii's ecosystem.
+    - Given quality training data, this can be easily achieved with the current training pipeline    
 - Integrate geographical data to visualize call distributions over time or space.
 
-## Citing
+## Citing  
 
 If you utilize RibbitRadar in your research, please consider citing the original AST paper and any subsequent works that this project builds upon.
 
-```bibtex
+The first paper proposes the Audio Spectrogram Transformer while the second paper describes the training pipeline that they applied on AST to achieve the new state-of-the-art on AudioSet.   
+```  
 @inproceedings{gong21b_interspeech,
   author={Yuan Gong and Yu-An Chung and James Glass},
   title={{AST: Audio Spectrogram Transformer}},
@@ -69,3 +65,17 @@ If you utilize RibbitRadar in your research, please consider citing the original
   pages={571--575},
   doi={10.21437/Interspeech.2021-698}
 }
+```  
+```  
+@ARTICLE{gong_psla, 
+    author={Gong, Yuan and Chung, Yu-An and Glass, James},  
+    journal={IEEE/ACM Transactions on Audio, Speech, and Language Processing},   
+    title={PSLA: Improving Audio Tagging with Pretraining, Sampling, Labeling, and Aggregation},   
+    year={2021}, 
+    doi={10.1109/TASLP.2021.3120633}
+}
+```  
+
+
+ ## Contact
+If you have a question, would like to develop something similar for another species, or just want to share how you have used this, send me an email at tylerschwenk1@yahoo.com.
