@@ -12,11 +12,11 @@
 
 ## Introduction
 
-RibbitRadar is a software tool designed to accurately identify the presence of the endangered frog species, *Rana Draytonii*, within audio recordings. Leveraging a fine-tuned version of the Audio Spectrogram Transformer (AST), RibbitRadar processes raw audio data to recognize the unique calls of *Rana Draytonii* amidst various background noises.
+RibbitRadar is a software tool designed to accurately identify the presence of the endangered frog species, *Rana Draytonii*, within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer (AST), RibbitRadar processes raw audio data to recognize the unique calls of *Rana Draytonii* amidst various background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
 
 ## Getting Started
 
-To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies.
+To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies. If time is a constraint, my [Google Colab](https://github.com/tyler-schwenk/ast-rana-draytonii) version can provide increased speed if you pay for the use of Google's powerful GPUs or TPUs.
 
 ### Prerequisites
 
