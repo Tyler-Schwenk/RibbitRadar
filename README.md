@@ -12,7 +12,7 @@
 
 ## Introduction
 
-RibbitRadar is a software tool designed to accurately identify the presence of the endangered frog species, *Rana Draytonii*, within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer (AST), RibbitRadar processes raw audio data to recognize the unique calls of *Rana Draytonii* amidst various background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
+RibbitRadar is a hands-off software tool designed to accurately identify the presence of the endangered frog species, *Rana Draytonii*, within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer (AST), RibbitRadar processes raw audio data to recognize the unique calls of *Rana Draytonii* amidst various background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
 
 ## Getting Started
 
@@ -43,7 +43,13 @@ To use RibbitRadar, download the latest release from the [Releases](https://gith
 
 ## Project Structure
 
-The core of RibbitRadar lies within its ability to preprocess audio files, run them through the AST model, and output detailed analysis including detection times and environmental metadata in an Excel file.
+RibbitRadar will take the directory on your machine containing audio recordings from the field, as well as the name and location for your output file to be saved. After inputting this, the user only needs to click "Run Inference" and watch the application update them on the model locating all instances of *Rana Draytonii* vocalizations in their files. RibbitRadar will preprocess audio files, run them through the AST model, and output detailed analysis including detection times and environmental metadata in an Excel file at the location specified. The output file will contain information as below:
+
+| Model Name : Version | File Name     | Prediction | Times Heard | Device ID               | Timestamp                  | Temperature | Review Date |
+|----------------------|---------------|------------|-------------|-------------------------|----------------------------|-------------|-------------|
+| AST_Rana_Draytonii:2.0 | POND_19000 | Positive!   | 0-50         | AudioMoth 249BC30461CBB1E6 | 19:00:00 01/12/2022 (UTC-8) | 9.3C        | 2023-07-22  |
+| AST_Rana_Draytonii:2.0 | POND_20500 | Negative   | N/A         | AudioMoth 249BC30461CBB1E6 | 20:50:00 01/12/2022 (UTC-8) | 9.1C        | 2023-07-22  |
+
 
 ## Future Development
 
