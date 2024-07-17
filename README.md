@@ -1,7 +1,7 @@
 # RibbitRadar: Rana Draytonii Detection
 
 <p align="center">
-    <a href="https://www.gnu.org/licenses/agpl-3.0"><img alt="License: GNU Affero General Public License v3.0" src="https://img.shields.io/badge/License-AGPL_v3-blue.svg"></a>
+    <a href="https://opensource.org/license/bsd-3-clause"><img alt="License: BSD 3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg"></a>
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/issues"><img alt="Issue Badge" src="https://img.shields.io/github/issues/Tyler-Schwenk/RibbitRadar"></a>
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/pulls"><img alt="Pull requests Badge" src="https://img.shields.io/github/issues-pr/Tyler-Schwenk/RibbitRadar"></a>
 </p>
