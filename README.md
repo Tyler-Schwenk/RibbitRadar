@@ -62,8 +62,8 @@ To use RibbitRadar, download the latest release from the [Releases](https://gith
 ## Future Development
 
 - Expand the model to detect additional species relevant to Rana Draytonii's ecosystem.
-    - Given quality training data, this can be easily achieved with the current training pipeline    
-- Integrate geographical data to visualize call distributions over time or space.
+    - Given quality training data, this can be achieved with the current training pipeline    
+- Integrate geographical data to visualize call distributions over time and space.
 
 ## Citing  
 
