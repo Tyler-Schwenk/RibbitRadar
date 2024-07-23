@@ -11,8 +11,6 @@ venv.bak/
 .Python
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -66,3 +64,6 @@ cython_debug/
 # Specific project directories
 Rana_Draytonii_ML_Model/ResampledAudio/
 Rana_Draytonii_ML_Model/Temp_File_Storage/
+
+# Ignore model weights
+model/best_audio_model_V2.pth
