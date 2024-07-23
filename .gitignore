@@ -67,3 +67,6 @@ Rana_Draytonii_ML_Model/Temp_File_Storage/
 
 # Ignore model weights
 model/best_audio_model_V2.pth
+
+# Ignore ffmpeg folder
+ffmpeg/
