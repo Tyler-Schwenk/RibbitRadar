@@ -23,6 +23,57 @@ logging.getLogger("").addHandler(console_handler)
 logging.info("Application started")
 
 
+import re
+import logging
+import os
+
+import re
+import logging
+import os
+
+
+def generate_unique_filename(directory, filename):
+    # Define a list of known extensions
+    known_extensions = [
+        ".xlsx",
+        ".xls",
+        ".csv",
+        ".txt",
+        ".pdf",
+        ".docx",
+        ".doc",
+        ".pptx",
+        ".ppt",
+    ]
+
+    # Initialize base and extension
+    base, extension = filename, ""
+
+    # Check if the filename ends with a known extension
+    for ext in known_extensions:
+        if filename.lower().endswith(ext):
+            base = filename[: -len(ext)]
+            extension = ext
+            break
+
+    # If no known extension is found, default to .xlsx
+    if not extension:
+        extension = ".xlsx"
+
+    counter = 1
+    unique_filename = f"{base}{extension}"
+
+    logging.debug(f"Checking existence of: {os.path.join(directory, unique_filename)}")
+
+    while os.path.exists(os.path.join(directory, unique_filename)):
+        unique_filename = f"{base}({counter}){extension}"
+        logging.debug(f"File exists. Trying new name: {unique_filename}")
+        counter += 1
+
+    logging.info(f"Final unique filename: {unique_filename}")
+    return unique_filename
+
+
 def run_inference(
     input_dir,
     output_dir,
@@ -63,6 +114,7 @@ def run_inference(
     try:
         import inference
 
+        logging.info(f"Starting inference with output file: {output_file}")
         update_progress("Inference started", 0, "Inference Started.")
         metadata_dict = AudioPreprocessing.extract_metadata_from_files_in_directory(
             input_dir, update_progress
@@ -70,6 +122,11 @@ def run_inference(
         AudioPreprocessing.Preprocess_audio(
             input_dir, temp_file_storage, resampled_audio_dir, update_progress
         )
+
+        # Generate a unique output filename
+        output_file = generate_unique_filename(output_dir, output_file)
+        logging.info(f"Unique output filename generated: {output_file}")
+
         inference.run_inference(
             labels_path,
             checkpoint_path,
@@ -83,7 +140,7 @@ def run_inference(
 
         messagebox.showinfo(
             "Success",
-            f"Inference completed successfully. View your results at {output_dir}",
+            f"Inference completed successfully. View your results at {os.path.join(output_dir, output_file)}",
         )
         update_progress(
             "Inference completed.", 100, "Inference completed successfully."

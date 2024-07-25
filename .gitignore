@@ -70,3 +70,5 @@ model/best_audio_model_V2.pth
 
 # Ignore ffmpeg folder
 ffmpeg/
+
+ribbitradar.log

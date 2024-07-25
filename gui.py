@@ -79,37 +79,19 @@ class RibbitRadarGUI:
         output_file = self.output_file_entry.get().strip()
 
         # Validate Input Folder Path
-        input_folder = self.input_folder_entry.get()
         if not os.path.isdir(input_folder):
             messagebox.showerror("Invalid Path", "The input folder path is invalid.")
             return False
 
         # Validate Output Folder Path
-        output_folder = self.output_folder_entry.get()
         if not os.path.isdir(output_folder):
             messagebox.showerror("Invalid Path", "The output folder path is invalid.")
             return False
 
-        # Validate Output File Name (ensure it's not empty)
-        output_file = self.output_file_entry.get()
-        if not output_file:
+        # Validate Output File Name (ensure it's not empty and doesn't contain invalid characters)
+        if not output_file or any(char in output_file for char in r'\/:*?"<>|'):
             messagebox.showerror(
                 "Invalid Name", "Please enter a valid output file name."
-            )
-            return False
-
-        if any(char in output_file for char in r'\/:*?"<>|'):
-            messagebox.showerror(
-                "Invalid File Name", "The output file name contains invalid characters."
-            )
-            return False
-
-        # Check for output file already exists
-        full_path = os.path.join(output_folder, output_file)
-        if os.path.exists(full_path):
-            messagebox.showerror(
-                "File Exists",
-                "A file with this output name already exists in the folder. Please choose a different name to avoid overwrite.",
             )
             return False
 
@@ -207,9 +189,6 @@ class RibbitRadarGUI:
         2. Enter a unique name for the Output File.
         3. Choose the Output Location to save the results.
         4. Click 'Run Inference' to start processing.
-
-        Note: The Output File name must be unique, if there is already a file with that name in that location
-          it will not be saved
         """
         instruction_text.config(state="normal")
         instruction_text.insert("end", instructions)
