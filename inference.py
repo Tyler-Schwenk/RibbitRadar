@@ -176,22 +176,25 @@ def save_results(results_df, results_path):
 
 def run_inference(labels_path, checkpoint_path, resampled_audio_dir, model_version, output_dir, output_file, metadata_dict, progress_callback):
     """
-    Runs Inference (update this)
+    Runs the inference process on preprocessed audio files to detect Rana Draytonii calls.
 
-    This function performs several preprocessing steps on audio files:  <-- also outdated!!!
-    - Splits audio files into smaller segments.
-    - Clears the output directory.
-    - Resamples audio files to a specified sample rate.
-    - Converts stereo audio files to mono.
+    This function performs the following steps:
+    1. Initializes the AST model with the specified checkpoint.
+    2. Loads and preprocesses audio files from the resampled audio directory.
+    3. Runs predictions on the audio segments using the model.
+    4. Aggregates results and metadata.
+    5. Generates an Excel report with the inference results.
 
     Parameters:
-    labels_path (str): The path to the labels.csv file
-    checkpoint_path (str): The path to the weights - best_audio_model1.pth <-- should this be best_audio_model_V2?????????????????
-    resampled_audio_dir (str): Path to ResampledAudio which containd the preprocessed audio files
-    model_version (str): Number indicating the model version - see "Version Guide" google doc for more - https://docs.google.com/document/d/1G4oD7NzlwUOsZwusmwAbV5asFBKqjmXZk5A1xlc9Jc0/edit
-    results_path (str): Path location to store the final excel document
-    progress_callback (function): A callback function for updating the progress of the preprocessing. This function should 
-        accept two parameters: a message (str) and an optional progress value (float or int).
+    labels_path (str): The path to the labels.csv file.
+    checkpoint_path (str): The path to the model weights file (e.g., best_audio_model_V2.pth).
+    resampled_audio_dir (str): Path to the directory containing resampled audio files.
+    model_version (str): Number indicating the model version.
+    output_dir (str): Directory where the results will be saved.
+    output_file (str): Name of the output Excel file.
+    metadata_dict (dict): Dictionary containing metadata for the audio files.
+    progress_callback (function): A callback function for updating the progress of the inference process.
+        This function should accept three parameters: a message (str), a progress value (float or int), and a log message (str).
 
     Returns:
     None

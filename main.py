@@ -14,7 +14,6 @@ logging.basicConfig(level=logging.DEBUG,
                     filemode='w',
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-# You can also add a handler to log to console at a different level, if desired
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
 logging.getLogger('').addHandler(console_handler)
@@ -23,6 +22,31 @@ logging.info("Application started")
 
 
 def run_inference(input_dir, output_dir, output_file, temp_file_storage, resampled_audio_dir, labels_path, checkpoint_path, model_version, update_progress, enable_run_button):
+    """
+    Runs the complete inference process for detecting Rana Draytonii calls in audio files.
+
+    This function performs the following steps:
+    1. Extracts metadata from the input audio files.
+    2. Preprocesses the audio files (splitting, resampling, converting to mono).
+    3. Runs the inference process using the AST model.
+    4. Displays success or error messages to the user.
+    5. Updates the progress and logs the process.
+
+    Parameters:
+    input_dir (str): Path to the directory containing the input audio files.
+    output_dir (str): Path to the directory where the output files will be saved.
+    output_file (str): Name of the output file.
+    temp_file_storage (str): Path to the temporary file storage directory.
+    resampled_audio_dir (str): Path to the directory containing resampled audio files.
+    labels_path (str): Path to the labels.csv file.
+    checkpoint_path (str): Path to the model weights file.
+    model_version (str): Version number of the model.
+    update_progress (function): Callback function for updating progress.
+    enable_run_button (function): Callback function to re-enable the Run button.
+
+    Returns:
+    None
+    """
     try:
         import inference
         update_progress("Inference started", 0, "Inference Started.")
@@ -41,6 +65,20 @@ def run_inference(input_dir, output_dir, output_file, temp_file_storage, resampl
 
         
 def main():
+    """
+    Initializes and runs the RibbitRadar application.
+
+    This function performs the following steps:
+    1. Initializes the Tkinter root window and splash screen.
+    2. Sets up the FFmpeg environment.
+    3. Defines paths for model, audio processing, and labels.
+    4. Initializes the RibbitRadar GUI.
+    5. Sets the inference callback for the GUI.
+    6. Starts the Tkinter event loop.
+
+    Returns:
+    None
+    """
     root = tk.Tk()
     root.title('RibbitRadar')
 

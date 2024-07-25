@@ -177,7 +177,7 @@ def stereo_to_mono(directory_path):
 
 def Preprocess_audio(input_dir, temp_file_storage, resampled_audio_dir, progress_callback):
     """
-    Preprocesses audio files from input_dir, through temp_file_storage, and into resampled_audio_dir
+    Preprocesses audio files from input_dir, through temp_file_storage, and into resampled_audio_dir.
 
     This function performs several preprocessing steps on audio files:
     - Splits audio files into smaller segments.
@@ -190,7 +190,6 @@ def Preprocess_audio(input_dir, temp_file_storage, resampled_audio_dir, progress
     temp_file_storage (str): The directory where the processed audio segments will be saved.
     resampled_audio_dir (str): The directory where resampled audio files will be saved.
     progress_callback (function): A callback function for updating the progress of the preprocessing. This function should accept two parameters: a message (str) and an optional progress value (float or int).
-
 
     Returns:
     None
