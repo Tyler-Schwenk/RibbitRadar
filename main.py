@@ -9,19 +9,32 @@ import sys
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG,
-                    filename='ribbitradar.log',
-                    filemode='w',
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename="ribbitradar.log",
+    filemode="w",
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
-logging.getLogger('').addHandler(console_handler)
+logging.getLogger("").addHandler(console_handler)
 
 logging.info("Application started")
 
 
-def run_inference(input_dir, output_dir, output_file, temp_file_storage, resampled_audio_dir, labels_path, checkpoint_path, model_version, update_progress, enable_run_button):
+def run_inference(
+    input_dir,
+    output_dir,
+    output_file,
+    temp_file_storage,
+    resampled_audio_dir,
+    labels_path,
+    checkpoint_path,
+    model_version,
+    update_progress,
+    enable_run_button,
+):
     """
     Runs the complete inference process for detecting Rana Draytonii calls in audio files.
 
@@ -49,21 +62,42 @@ def run_inference(input_dir, output_dir, output_file, temp_file_storage, resampl
     """
     try:
         import inference
-        update_progress("Inference started", 0, "Inference Started.")
-        metadata_dict = AudioPreprocessing.extract_metadata_from_files_in_directory(input_dir, update_progress)
-        AudioPreprocessing.Preprocess_audio(input_dir, temp_file_storage, resampled_audio_dir, update_progress)
-        inference.run_inference(labels_path, checkpoint_path, resampled_audio_dir, model_version, output_dir, output_file, metadata_dict, update_progress)
 
-        messagebox.showinfo('Success', f'Inference completed successfully. View your results at {output_dir}')
-        update_progress("Inference completed.", 100, "Inference completed successfully.")
-    
+        update_progress("Inference started", 0, "Inference Started.")
+        metadata_dict = AudioPreprocessing.extract_metadata_from_files_in_directory(
+            input_dir, update_progress
+        )
+        AudioPreprocessing.Preprocess_audio(
+            input_dir, temp_file_storage, resampled_audio_dir, update_progress
+        )
+        inference.run_inference(
+            labels_path,
+            checkpoint_path,
+            resampled_audio_dir,
+            model_version,
+            output_dir,
+            output_file,
+            metadata_dict,
+            update_progress,
+        )
+
+        messagebox.showinfo(
+            "Success",
+            f"Inference completed successfully. View your results at {output_dir}",
+        )
+        update_progress(
+            "Inference completed.", 100, "Inference completed successfully."
+        )
+
     except Exception as e:
         update_progress(None, None, f"Error: {str(e)}")
         logging.exception(f"Error in inference: {str(e)}")
-        messagebox.showerror('Error', f'An error occurred while running inference: {str(e)}')
+        messagebox.showerror(
+            "Error", f"An error occurred while running inference: {str(e)}"
+        )
         enable_run_button()
 
-        
+
 def main():
     """
     Initializes and runs the RibbitRadar application.
@@ -80,7 +114,7 @@ def main():
     None
     """
     root = tk.Tk()
-    root.title('RibbitRadar')
+    root.title("RibbitRadar")
 
     # Display the splash screen
     splash = RibbitRadarGUI.create_splash_screen(root)
@@ -93,9 +127,9 @@ def main():
     # =============== Temporarily removed since no longer using remote model ==================
 
     # Check and install necessary packages
-    #PackageInstaller.check_and_install_packages()
+    # PackageInstaller.check_and_install_packages()
 
-    # Define paths and update model  
+    # Define paths and update model
     # base_path = os.path.dirname(os.path.abspath(__file__))
     # local_version_file = os.path.normpath(os.path.join(base_path, 'model', 'ModelVersion.txt'))
     # model_output_dir = os.path.normpath(os.path.join(base_path, 'model'))
@@ -116,15 +150,20 @@ def main():
         return os.path.join(base_path, relative_path)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = resource_path('model/best_audio_model_V2.pth')
-    model_version = "2"  
-
+    model_path = resource_path("model/best_audio_model_V2.pth")
+    model_version = "2"
 
     # Define paths for audio processing
-    Resampled_audio_path = os.path.normpath(os.path.join(base_path, 'Rana_Draytonii_ML_Model', 'ResampledAudio'))
-    temp_file_storage = os.path.normpath(os.path.join(base_path, 'Rana_Draytonii_ML_Model', 'Temp_File_Storage'))
-    labels_path = os.path.normpath(os.path.join(base_path, 'Rana_Draytonii_ML_Model', 'labels.csv'))
-    #checkpoint_path, model_version = PackageInstaller.get_model_info(local_version_file, model_output_dir) removed since no longer using remote model
+    Resampled_audio_path = os.path.normpath(
+        os.path.join(base_path, "Rana_Draytonii_ML_Model", "ResampledAudio")
+    )
+    temp_file_storage = os.path.normpath(
+        os.path.join(base_path, "Rana_Draytonii_ML_Model", "Temp_File_Storage")
+    )
+    labels_path = os.path.normpath(
+        os.path.join(base_path, "Rana_Draytonii_ML_Model", "labels.csv")
+    )
+    # checkpoint_path, model_version = PackageInstaller.get_model_info(local_version_file, model_output_dir) removed since no longer using remote model
 
     # Now that initial setup is done, destroy the splash screen
     splash.destroy()
@@ -132,27 +171,33 @@ def main():
     # Initialize the main GUI
     app = RibbitRadarGUI(root, Resampled_audio_path)
 
-    app.set_inference_callback(lambda: run_inference(
-        os.path.normpath(app.input_folder_entry.get()),
-        os.path.normpath(app.output_folder_entry.get()),
-        os.path.normpath(app.output_file_entry.get()),
-        temp_file_storage,
-        Resampled_audio_path,
-        labels_path,
-        model_path,
-        model_version,
-        update_progress=lambda message=None, value=None, log_message=None: app.update_queue.put((message, value, log_message)),
-        enable_run_button=lambda: app.update_queue.put((None, None, "Enable Run Button"))
-    ))
+    app.set_inference_callback(
+        lambda: run_inference(
+            os.path.normpath(app.input_folder_entry.get()),
+            os.path.normpath(app.output_folder_entry.get()),
+            os.path.normpath(app.output_file_entry.get()),
+            temp_file_storage,
+            Resampled_audio_path,
+            labels_path,
+            model_path,
+            model_version,
+            update_progress=lambda message=None, value=None, log_message=None: app.update_queue.put(
+                (message, value, log_message)
+            ),
+            enable_run_button=lambda: app.update_queue.put(
+                (None, None, "Enable Run Button")
+            ),
+        )
+    )
 
     # Start the GUI event loop
     root.mainloop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         logging.info("Application starting...")
         main()
         logging.info("Application shutdown.")
     except Exception as e:
         logging.critical(f"Unhandled exception: {e}", exc_info=True)
-
