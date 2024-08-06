@@ -194,8 +194,8 @@ def aggregate_results(
                 "Model Version ID": [model_version],
                 "File Name": [base_file_name],
                 "Prediction": [prediction],
-                "Positive Score": [avg_positive_score],
-                "Negative Score": [avg_negative_score],
+                "Avg Positive Score": [avg_positive_score],
+                "Avg Negative Score": [avg_negative_score],
                 "Times Heard": [times_str],
                 "Device ID": [device_id],
                 "Timestamp": [recorded_at],
@@ -203,8 +203,8 @@ def aggregate_results(
                 "Review Date": [datetime.now().strftime("%Y-%m-%d")],
             }
         )
-
-        results_df = pd.concat([results_df, new_row], ignore_index=True)
+        if not new_row.empty:
+            results_df = pd.concat([results_df, new_row], ignore_index=True)
 
     return results_df
 
