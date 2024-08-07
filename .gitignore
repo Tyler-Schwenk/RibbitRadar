@@ -73,3 +73,5 @@ model/*.pth
 ffmpeg/
 
 ribbitradar.log
+
+echo ".env" >> .gitignore

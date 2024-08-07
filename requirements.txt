@@ -1,0 +1,9 @@
+torchaudio
+timm==0.4.5
+wget
+pydub
+requests
+soundfile
+pandas
+openpyxl
+gdown

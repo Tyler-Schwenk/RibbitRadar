@@ -1,12 +1,21 @@
+# main.py
+import logging
+from PackageInstaller import check_and_install_packages
+
+check_and_install_packages()
+
 import tkinter as tk
 from tkinter import messagebox
 from gui import RibbitRadarGUI
 import os
 import GetFFMPEG
-import PackageInstaller
 import AudioPreprocessing
 import sys
-import logging
+from ModelManager import (
+    update_local_model,
+    get_highest_local_model_version,
+    get_latest_local_model_file,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -22,48 +31,17 @@ logging.getLogger("").addHandler(console_handler)
 
 logging.info("Application started")
 
-
-import re
-import logging
-import os
-
-import re
-import logging
-import os
+# Google Drive folder ID and local paths for model management
+MODEL_URL = "https://drive.google.com/uc?id=1lKOiBk1zrelbnQKHN8y0FzPy35cfM2Rz"
+LOCAL_MODEL_DIR = "model"
 
 
 def generate_unique_filename(directory, filename):
-    # Define a list of known extensions
-    known_extensions = [
-        ".xlsx",
-        ".xls",
-        ".csv",
-        ".txt",
-        ".pdf",
-        ".docx",
-        ".doc",
-        ".pptx",
-        ".ppt",
-    ]
-
-    # Initialize base and extension
-    base, extension = filename, ""
-
-    # Check if the filename ends with a known extension
-    for ext in known_extensions:
-        if filename.lower().endswith(ext):
-            base = filename[: -len(ext)]
-            extension = ext
-            break
-
-    # If no known extension is found, default to .xlsx
+    base, extension = os.path.splitext(filename)
     if not extension:
-        extension = ".xlsx"
-
+        extension = ".xlsx"  # Default to .xlsx if no extension is provided
     counter = 1
     unique_filename = f"{base}{extension}"
-
-    logging.debug(f"Checking existence of: {os.path.join(directory, unique_filename)}")
 
     while os.path.exists(os.path.join(directory, unique_filename)):
         unique_filename = f"{base}({counter}){extension}"
@@ -114,7 +92,6 @@ def run_inference(
     try:
         import inference
 
-        logging.info(f"Starting inference with output file: {output_file}")
         update_progress("Inference started", 0, "Inference Started.")
         metadata_dict = AudioPreprocessing.extract_metadata_from_files_in_directory(
             input_dir, update_progress
@@ -125,7 +102,6 @@ def run_inference(
 
         # Generate a unique output filename
         output_file = generate_unique_filename(output_dir, output_file)
-        logging.info(f"Unique output filename generated: {output_file}")
 
         inference.run_inference(
             labels_path,
@@ -140,7 +116,7 @@ def run_inference(
 
         messagebox.showinfo(
             "Success",
-            f"Inference completed successfully. View your results at {os.path.join(output_dir, output_file)}",
+            f"Inference completed successfully. View your results at {output_dir}",
         )
         update_progress(
             "Inference completed.", 100, "Inference completed successfully."
@@ -162,10 +138,12 @@ def main():
     This function performs the following steps:
     1. Initializes the Tkinter root window and splash screen.
     2. Sets up the FFmpeg environment.
-    3. Defines paths for model, audio processing, and labels.
-    4. Initializes the RibbitRadar GUI.
-    5. Sets the inference callback for the GUI.
-    6. Starts the Tkinter event loop.
+    3. Checks for and installs required packages.
+    4. Updates the model weights if a new version is available.
+    5. Defines paths for model, audio processing, and labels.
+    6. Initializes the RibbitRadar GUI.
+    7. Sets the inference callback for the GUI.
+    8. Starts the Tkinter event loop.
 
     Returns:
     None
@@ -181,34 +159,19 @@ def main():
     os.environ["PATH"] += os.pathsep + os.path.dirname(ffmpeg_executable)
     os.environ["FFMPEG_BINARY"] = ffmpeg_executable
 
-    # =============== Temporarily removed since no longer using remote model ==================
+    # Check and install required packages
+    check_and_install_packages()
 
-    # Check and install necessary packages
-    # PackageInstaller.check_and_install_packages()
+    # Update model weights if a new version is available
+    update_local_model(MODEL_URL, LOCAL_MODEL_DIR)
 
-    # Define paths and update model
-    # base_path = os.path.dirname(os.path.abspath(__file__))
-    # local_version_file = os.path.normpath(os.path.join(base_path, 'model', 'ModelVersion.txt'))
-    # model_output_dir = os.path.normpath(os.path.join(base_path, 'model'))
-    # remote_version_file_id = '1yfgi1RgIyu9bVbp1cZInQNfowGA6W359'
-    # PackageInstaller.check_and_update_model(local_version_file, remote_version_file_id, model_output_dir)
+    # Get the highest local model version
+    model_version = get_highest_local_model_version(LOCAL_MODEL_DIR)
 
-    # =================================================================================================
-
-    # Function to determine the base path for accessing data files
-    def resource_path(relative_path):
-        """Get the absolute path to the resource, works for dev and for PyInstaller."""
-        try:
-            # PyInstaller creates a temp folder and stores path in _MEIPASS
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-
-        return os.path.join(base_path, relative_path)
+    # Determine the latest model file in the local directory
+    model_path = get_latest_local_model_file(LOCAL_MODEL_DIR)
 
     base_path = os.path.dirname(os.path.abspath(__file__))
-    model_path = resource_path("model/best_audio_model_V2.pth")
-    model_version = "2"
 
     # Define paths for audio processing
     Resampled_audio_path = os.path.normpath(
@@ -220,7 +183,6 @@ def main():
     labels_path = os.path.normpath(
         os.path.join(base_path, "Rana_Draytonii_ML_Model", "labels.csv")
     )
-    # checkpoint_path, model_version = PackageInstaller.get_model_info(local_version_file, model_output_dir) removed since no longer using remote model
 
     # Now that initial setup is done, destroy the splash screen
     splash.destroy()
