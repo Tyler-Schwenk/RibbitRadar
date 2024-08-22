@@ -2,6 +2,7 @@ import os
 import gdown
 import logging
 
+
 def extract_model_version(filename):
     """
     Extract the version number from the model filename.
@@ -18,7 +19,9 @@ def extract_model_version(filename):
     except (IndexError, ValueError):
         return 0  # Default to 0 if the version cannot be extracted
 
+
 METADATA_URL = "https://drive.google.com/uc?id=1ry4-tguDnA1rFXFZ65KslO6lE2mL1LQv"
+
 
 def download_metadata(metadata_url, local_metadata_path):
     """
@@ -41,6 +44,7 @@ def download_metadata(metadata_url, local_metadata_path):
         logging.error(f"Failed to download metadata: {e}")
         return None
 
+
 def parse_metadata(metadata_path):
     """
     Parse the metadata file to extract model version and file_id.
@@ -53,7 +57,7 @@ def parse_metadata(metadata_path):
     """
     metadata = {}
     try:
-        with open(metadata_path, 'r', encoding='utf-8') as f:
+        with open(metadata_path, "r", encoding="utf-8") as f:
             for line in f:
                 key, value = line.split(":")
                 metadata[key.strip()] = value.strip()
@@ -63,9 +67,11 @@ def parse_metadata(metadata_path):
         return None
 
 
-def download_latest_model(model_url, local_model_dir, new_version, current_version, progress_callback=None):
+def download_latest_model(
+    model_url, local_model_dir, new_version, current_version, progress_callback=None
+):
     """
-    Download the latest model from Google Drive if it's a newer version, handle network interruptions, 
+    Download the latest model from Google Drive if it's a newer version, handle network interruptions,
     and delete old model files.
 
     Args:
@@ -105,7 +111,9 @@ def download_latest_model(model_url, local_model_dir, new_version, current_versi
 
             # Delete old models except the newly downloaded one
             model_files = [
-                f for f in os.listdir(local_model_dir) if f.startswith("best_audio_model_V")
+                f
+                for f in os.listdir(local_model_dir)
+                if f.startswith("best_audio_model_V")
             ]
             for model_file in model_files:
                 old_model_path = os.path.join(local_model_dir, model_file)
@@ -126,6 +134,7 @@ def download_latest_model(model_url, local_model_dir, new_version, current_versi
             progress_callback("Failed to download model.")
         return None
 
+
 def get_highest_local_model_version(local_model_dir):
     """
     Get the highest model version number in the local directory.
@@ -142,6 +151,7 @@ def get_highest_local_model_version(local_model_dir):
         return 0
     highest_version = max(extract_model_version(f) for f in model_files)
     return highest_version
+
 
 def get_latest_local_model_file(model_dir):
     """
@@ -162,7 +172,6 @@ def get_latest_local_model_file(model_dir):
         raise FileNotFoundError("No model files found in the directory.")
     latest_model_file = max(model_files, key=lambda x: extract_model_version(x))
     return os.path.join(model_dir, latest_model_file)
-
 
 
 def update_local_model(local_model_dir, progress_callback=None):
@@ -190,8 +199,10 @@ def update_local_model(local_model_dir, progress_callback=None):
         return None
 
     current_version = get_highest_local_model_version(local_model_dir)
-    new_version = int(metadata.get('version', 0))
+    new_version = int(metadata.get("version", 0))
 
     # Proceed to download the model if a newer version is available
     model_url = f"https://drive.google.com/uc?id={metadata['file_id']}"
-    return download_latest_model(model_url, local_model_dir, new_version, current_version, progress_callback)
+    return download_latest_model(
+        model_url, local_model_dir, new_version, current_version, progress_callback
+    )

@@ -153,7 +153,7 @@ def main():
 
     # Display the splash screen
     splash = RibbitRadarGUI.create_splash_screen(root)
-    splash.attributes('-topmost', True)  # Make splash screen the topmost window
+    splash.attributes("-topmost", True)  # Make splash screen the topmost window
 
     def update_splash_progress(message):
         splash.progress_label.config(text=message)
@@ -216,7 +216,6 @@ def main():
 
     # Start the GUI event loop
     root.mainloop()
-
 
 
 if __name__ == "__main__":
