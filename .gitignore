@@ -72,6 +72,9 @@ model/*.pth
 # Ignore ffmpeg folder
 ffmpeg/
 
+# Specific files
 ribbitradar.log
+model_metadata.txt
+
 
 echo ".env" >> .gitignore

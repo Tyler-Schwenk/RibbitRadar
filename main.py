@@ -153,6 +153,11 @@ def main():
 
     # Display the splash screen
     splash = RibbitRadarGUI.create_splash_screen(root)
+    splash.attributes('-topmost', True)  # Make splash screen the topmost window
+
+    def update_splash_progress(message):
+        splash.progress_label.config(text=message)
+        splash.update_idletasks()
 
     # Setup FFmpeg environment
     ffmpeg_executable, _ = GetFFMPEG.get_ffmpeg_path()
@@ -163,7 +168,7 @@ def main():
     check_and_install_packages()
 
     # Update model weights if a new version is available
-    update_local_model(MODEL_URL, LOCAL_MODEL_DIR)
+    update_local_model(LOCAL_MODEL_DIR, update_splash_progress)
 
     # Get the highest local model version
     model_version = get_highest_local_model_version(LOCAL_MODEL_DIR)
@@ -211,6 +216,7 @@ def main():
 
     # Start the GUI event loop
     root.mainloop()
+
 
 
 if __name__ == "__main__":
