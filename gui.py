@@ -62,10 +62,17 @@ class RibbitRadarGUI:
         tk.Toplevel: The splash screen window.
         """
         splash = tk.Toplevel(root)
-        splash.title("Loading")
-        splash.geometry("300x100")
-        tk.Label(splash, text="Starting RibbitRadar, please wait...").pack(pady=20)
-        splash.update()
+        splash.geometry("300x200")
+        splash.title("RibbitRadar Loading...")
+        splash_label = tk.Label(splash, text="Loading...", font=("Helvetica", 16))
+        splash_label.pack(expand=True)
+
+        # Add a progress label to display updates
+        progress_label = tk.Label(splash, text="", font=("Helvetica", 12))
+        progress_label.pack()
+
+        splash.progress_label = progress_label  # Store the label for later updates
+
         return splash
 
     # In gui.py, inside the RibbitRadarGUI class
