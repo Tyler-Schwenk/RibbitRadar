@@ -46,7 +46,7 @@ def make_features_fixed(wav_name):
 # Function to initialize and load the model
 def initialize_model(checkpoint_path):
     model = ASTModel(
-        label_dim=2,
+        label_dim=3,
         fstride=10,
         tstride=10,
         input_fdim=128,
@@ -102,11 +102,16 @@ def make_predictions(data_loader, audio_model, audio_files_dataset, progress_cal
             logging.debug(f"Processing file: {file_name}")
 
             base_file_name, _ = os.path.splitext(file_name.split("_segment")[0])
-            positive_score = file_result[0]
-            negative_score = file_result[1]
-            prediction = "Positive" if positive_score > negative_score else "Negative"
+
+            # Extract scores
+            radr_score = file_result[0]
+            raca_score = file_result[1]
+            negative_score = file_result[2]
+
+            # Determine prediction
+            prediction = determine_prediction((radr_score, raca_score, negative_score))
             file_predictions[base_file_name].append(
-                (prediction, positive_score, negative_score)
+                (prediction, radr_score, raca_score, negative_score)
             )
 
         total_processed_files += len(batch)
@@ -132,6 +137,30 @@ def group_consecutive_elements(data):
     return ranges
 
 
+def determine_prediction(scores, threshold=0.5):
+    """
+    Determines the prediction based on the scores for RADR and RACA.
+
+    Args:
+        scores (tuple): A tuple containing the scores for RADR, RACA, and Negative.
+        threshold (float): The threshold above which a score is considered positive.
+
+    Returns:
+        str: The prediction based on the scores.
+    """
+    radr_score, raca_score, negative_score = scores
+
+    predictions = []
+    if radr_score > threshold:
+        predictions.append("RADR")
+    if raca_score > threshold:
+        predictions.append("RACA")
+    if not predictions:
+        predictions.append("Negative")
+
+    return ", ".join(predictions)
+
+
 # Function to aggregate results
 def aggregate_results(
     file_predictions, metadata_dict, model_version, progress_callback
@@ -146,7 +175,8 @@ def aggregate_results(
             "Model Version ID",
             "File Name",
             "Prediction",
-            "Avg Positive Score",
+            "Avg RADR Score",
+            "Avg RACA Score",
             "Avg Negative Score",
             "Times Heard",
             "Device ID",
@@ -160,13 +190,15 @@ def aggregate_results(
     for base_file_name, predictions in file_predictions.items():
         # Extract predictions and scores
         heard_segments = [
-            i for i, (pred, _, _) in enumerate(predictions) if pred == "Positive"
+            i for i, (pred, _, _, _) in enumerate(predictions) if pred != "Negative"
         ]
-        positive_scores = [score for _, score, _ in predictions]
-        negative_scores = [score for _, _, score in predictions]
+        radr_scores = [score for _, score, _, _ in predictions]
+        raca_scores = [score for _, _, score, _ in predictions]
+        negative_scores = [score for _, _, _, score in predictions]
 
-        # Compute average scores for the entire audio file (if needed)
-        avg_positive_score = sum(positive_scores) / len(positive_scores)
+        # Compute average scores for the entire audio file
+        avg_radr_score = sum(radr_scores) / len(radr_scores)
+        avg_raca_score = sum(raca_scores) / len(raca_scores)
         avg_negative_score = sum(negative_scores) / len(negative_scores)
 
         if len(heard_segments) == 0:
@@ -176,10 +208,9 @@ def aggregate_results(
             times_str = ", ".join(f"{s*10}-{(e+1)*10}" for s, e in heard_ranges)
 
         # Get the prediction
-        if times_str == "N/A":
-            prediction = "Negative"
-        else:
-            prediction = "Positive!"
+        prediction = determine_prediction(
+            (avg_radr_score, avg_raca_score, avg_negative_score)
+        )
 
         # Try to get metadata for both .WAV and .wav versions of the file
         metadata = metadata_dict.get(
@@ -194,7 +225,8 @@ def aggregate_results(
                 "Model Version ID": [model_version],
                 "File Name": [base_file_name],
                 "Prediction": [prediction],
-                "Avg Positive Score": [avg_positive_score],
+                "Avg RADR Score": [avg_radr_score],
+                "Avg RACA Score": [avg_raca_score],
                 "Avg Negative Score": [avg_negative_score],
                 "Times Heard": [times_str],
                 "Device ID": [device_id],

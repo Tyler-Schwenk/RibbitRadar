@@ -1,13 +1,23 @@
 # main.py
-import logging
 from PackageInstaller import check_and_install_packages
+import os
+import logging
+
+# Define the log file path
+log_file_path = "ribbitradar.log"
+
+# Set up logging configuration
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler(log_file_path, mode="w"), logging.StreamHandler()],
+)
 
 check_and_install_packages()
 
 import tkinter as tk
 from tkinter import messagebox
 from gui import RibbitRadarGUI
-import os
 import GetFFMPEG
 import AudioPreprocessing
 import sys
@@ -16,18 +26,6 @@ from ModelManager import (
     get_highest_local_model_version,
     get_latest_local_model_file,
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,
-    filename="ribbitradar.log",
-    filemode="w",
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-logging.getLogger("").addHandler(console_handler)
 
 logging.info("Application started")
 
@@ -225,3 +223,5 @@ if __name__ == "__main__":
         logging.info("Application shutdown.")
     except Exception as e:
         logging.critical(f"Unhandled exception: {e}", exc_info=True)
+    finally:
+        logging.shutdown()

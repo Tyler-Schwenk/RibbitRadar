@@ -91,7 +91,7 @@ def download_latest_model(
         return None
 
     # Extract the file ID from the URL
-    file_id = model_url.split('id=')[1]
+    file_id = model_url.split("id=")[1]
     download_url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
     if progress_callback:
