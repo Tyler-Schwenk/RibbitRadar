@@ -61,6 +61,8 @@ def run_inference(
     model_version,
     update_progress,
     enable_run_button,
+    radr_threshold,
+    raca_threshold
 ):
     """
     Runs the complete inference process for detecting Rana Draytonii calls in audio files.
@@ -110,6 +112,8 @@ def run_inference(
             output_file,
             metadata_dict,
             update_progress,
+            radr_threshold, 
+            raca_threshold
         )
 
         messagebox.showinfo(
@@ -206,9 +210,11 @@ def main():
             update_progress=lambda message=None, value=None, log_message=None: app.update_queue.put(
                 (message, value, log_message)
             ),
-            enable_run_button=lambda: app.update_queue.put(
+            enable_run_button=lambda: app.update_queue.put(  # FIXME
                 (None, None, "Enable Run Button")
             ),
+            radr_threshold=float(app.radr_threshold_entry.get()),
+            raca_threshold=float(app.raca_threshold_entry.get()),
         )
     )
 

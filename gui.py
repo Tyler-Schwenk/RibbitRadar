@@ -149,6 +149,18 @@ class RibbitRadarGUI:
         )
         base_path_button.grid(column=2, row=3, padx=10, pady=10)
 
+        # RADR Threshold
+        ttk.Label(main_frame, text="RADR Threshold (0-1):").grid(column=0, row=11, padx=10, pady=10)
+        self.radr_threshold_entry = ttk.Entry(main_frame)
+        self.radr_threshold_entry.grid(column=1, row=11, padx=10, pady=10)
+        self.radr_threshold_entry.insert(0, "0.75")  # Default value
+        
+        # RACA Threshold
+        ttk.Label(main_frame, text="RACA Threshold (0-1):").grid(column=0, row=10, padx=10, pady=10)
+        self.raca_threshold_entry = ttk.Entry(main_frame)
+        self.raca_threshold_entry.grid(column=1, row=10, padx=10, pady=10)
+        self.raca_threshold_entry.insert(0, "0.75")  # Default value
+
         # Run Button
         self.run_button = ttk.Button(
             self.root, text="Run Inference", command=self.run_inference
