@@ -150,16 +150,82 @@ class RibbitRadarGUI:
         base_path_button.grid(column=2, row=3, padx=10, pady=10)
 
         # RADR Threshold
-        ttk.Label(main_frame, text="RADR Threshold (0-1):").grid(column=0, row=11, padx=10, pady=10)
+        ttk.Label(main_frame, text="RADR Threshold (0-1):").grid(
+            column=0, row=11, padx=10, pady=10
+        )
         self.radr_threshold_entry = ttk.Entry(main_frame)
         self.radr_threshold_entry.grid(column=1, row=11, padx=10, pady=10)
         self.radr_threshold_entry.insert(0, "0.75")  # Default value
-        
+
         # RACA Threshold
-        ttk.Label(main_frame, text="RACA Threshold (0-1):").grid(column=0, row=10, padx=10, pady=10)
+        ttk.Label(main_frame, text="RACA Threshold (0-1):").grid(
+            column=0, row=10, padx=10, pady=10
+        )
         self.raca_threshold_entry = ttk.Entry(main_frame)
         self.raca_threshold_entry.grid(column=1, row=10, padx=10, pady=10)
         self.raca_threshold_entry.insert(0, "0.75")  # Default value
+
+        # Add report selection section
+        report_frame = ttk.LabelFrame(self.root, text="Report Options", padding=10)
+        report_frame.grid(column=0, row=10, padx=10, pady=10)
+
+        # Report checkboxes
+        self.full_report_var = tk.BooleanVar(value=True)  # Full report checkbox
+        self.summary_report_var = tk.BooleanVar(value=False)  # Summary report checkbox
+        self.custom_report_var = tk.BooleanVar(value=False)  # Custom report checkbox
+
+        full_report_cb = ttk.Checkbutton(
+            report_frame, text="Full Report", variable=self.full_report_var
+        )
+        summary_report_cb = ttk.Checkbutton(
+            report_frame, text="Summary Report", variable=self.summary_report_var
+        )
+        custom_report_cb = ttk.Checkbutton(
+            report_frame,
+            text="Custom Report",
+            variable=self.custom_report_var,
+            command=self.toggle_custom_options,
+        )
+
+        full_report_cb.grid(column=0, row=0, sticky="w")
+        summary_report_cb.grid(column=0, row=1, sticky="w")
+        custom_report_cb.grid(column=0, row=2, sticky="w")
+
+        # Custom report options (initially hidden)
+        self.custom_options_frame = ttk.Frame(report_frame)
+        self.custom_options_frame.grid(column=1, row=2, sticky="w", padx=10)
+        self.custom_options_frame.grid_remove()  # Hide by default
+
+        self.include_metadata_var = tk.BooleanVar(value=True)
+        self.include_seg_scores_var = tk.BooleanVar(value=True)
+        self.include_times_heard_radr_var = tk.BooleanVar(value=True)
+        self.include_times_heard_raca_var = tk.BooleanVar(value=True)
+
+        include_metadata_cb = ttk.Checkbutton(
+            self.custom_options_frame,
+            text="Include Metadata",
+            variable=self.include_metadata_var,
+        )
+        include_seg_scores_cb = ttk.Checkbutton(
+            self.custom_options_frame,
+            text="Include all Segment Scores",
+            variable=self.include_seg_scores_var,
+        )
+        include_times_heard_radr_cb = ttk.Checkbutton(
+            self.custom_options_frame,
+            text="Include Times Heard RADR",
+            variable=self.include_times_heard_radr_var,
+        )
+        include_times_heard_raca_cb = ttk.Checkbutton(
+            self.custom_options_frame,
+            text="Include Times Heard RACA",
+            variable=self.include_times_heard_raca_var,
+        )
+
+        include_metadata_cb.grid(column=0, row=0, sticky="w")
+        include_seg_scores_cb.grid(column=0, row=1, sticky="w")
+        include_times_heard_radr_cb.grid(column=0, row=3, sticky="w")
+        include_times_heard_raca_cb.grid(column=0, row=4, sticky="w")
 
         # Run Button
         self.run_button = ttk.Button(
@@ -219,6 +285,15 @@ class RibbitRadarGUI:
         )
         instruction_text_scrollbar.grid(column=1, row=1, sticky="ns")
         instruction_text["yscrollcommand"] = instruction_text_scrollbar.set
+
+    def toggle_custom_options(self):
+        """
+        Show or hide the custom report options depending on whether 'Custom Report' is selected.
+        """
+        if self.custom_report_var.get():
+            self.custom_options_frame.grid()  # Show
+        else:
+            self.custom_options_frame.grid_remove()  # Hide
 
     def update_log(self, message):
         """Update the log area with new messages."""

@@ -61,7 +61,14 @@ def initialize_model(checkpoint_path):
     return audio_model.to(torch.device("cpu")).eval()
 
 
-def make_predictions(data_loader, audio_model, audio_files_dataset, progress_callback, radr_threshold, raca_threshold):
+def make_predictions(
+    data_loader,
+    audio_model,
+    audio_files_dataset,
+    progress_callback,
+    radr_threshold,
+    raca_threshold,
+):
     logging.debug("Starting make_predictions function")
     file_predictions = defaultdict(list)
     total_processed_files = 0
@@ -109,7 +116,9 @@ def make_predictions(data_loader, audio_model, audio_files_dataset, progress_cal
             negative_score = file_result[2]
 
             # Determine prediction
-            prediction = determine_prediction((radr_score, raca_score, negative_score), radr_threshold, raca_threshold)
+            prediction = determine_prediction(
+                (radr_score, raca_score, negative_score), radr_threshold, raca_threshold
+            )
             file_predictions[base_file_name].append(
                 (prediction, radr_score, raca_score, negative_score)
             )
@@ -162,38 +171,28 @@ def determine_prediction(scores, radr_threshold, raca_threshold):
     return ", ".join(predictions)
 
 
-def aggregate_results(
-    file_predictions, metadata_dict, progress_callback
-):
+def aggregate_results(file_predictions, metadata_dict, progress_callback):
     progress_callback(
         "Inference Step 3/3: aggregating results...",
         95,
         "Inference Step 3/3: aggregating results...",
     )
-    results_df = pd.DataFrame(
-        columns=[
-            "File Name",
-            "Prediction",
-            "Avg RADR Score",
-            "Avg RACA Score",
-            "Avg Negative Score",
-            "Times Heard RACA",
-            "Times Heard RADR",
-            "Device ID",
-            "Timestamp",
-            "Temperature",
-        ]
-    )
+
+    results = []  # List to store both the summary and detailed segment information
 
     for base_file_name, predictions in file_predictions.items():
         # Extract predictions and scores for each segment
         heard_segments_radr = [
-            i for i, (pred, radr_score, _, _) in enumerate(predictions) if "RADR" in pred
+            i
+            for i, (pred, radr_score, _, _) in enumerate(predictions)
+            if "RADR" in pred
         ]
         heard_segments_raca = [
-            i for i, (pred, _, raca_score, _) in enumerate(predictions) if "RACA" in pred
+            i
+            for i, (pred, _, raca_score, _) in enumerate(predictions)
+            if "RACA" in pred
         ]
-        
+
         # Scores for aggregating
         radr_scores = [score for _, score, _, _ in predictions]
         raca_scores = [score for _, _, score, _ in predictions]
@@ -215,17 +214,19 @@ def aggregate_results(
             prediction = "Negative"
 
         # Group consecutive segments where RACA and RADR were heard
-        if len(heard_segments_raca) == 0:
-            times_heard_raca = "N/A"
-        else:
+        times_heard_raca = "N/A"
+        if len(heard_segments_raca) > 0:
             heard_ranges_raca = group_consecutive_elements(heard_segments_raca)
-            times_heard_raca = ", ".join(f"{s*10}-{(e+1)*10}" for s, e in heard_ranges_raca)
+            times_heard_raca = ", ".join(
+                f"{s*10}-{(e+1)*10}" for s, e in heard_ranges_raca
+            )
 
-        if len(heard_segments_radr) == 0:
-            times_heard_radr = "N/A"
-        else:
+        times_heard_radr = "N/A"
+        if len(heard_segments_radr) > 0:
             heard_ranges_radr = group_consecutive_elements(heard_segments_radr)
-            times_heard_radr = ", ".join(f"{s*10}-{(e+1)*10}" for s, e in heard_ranges_radr)
+            times_heard_radr = ", ".join(
+                f"{s*10}-{(e+1)*10}" for s, e in heard_ranges_radr
+            )
 
         # Try to get metadata for both .WAV and .wav versions of the file
         metadata = metadata_dict.get(
@@ -235,42 +236,73 @@ def aggregate_results(
         recorded_at = metadata.get("recorded_at")
         temperature = metadata.get("temperature")
 
-        # Append results to the dataframe
-        new_row = pd.DataFrame(
+        # Append the file-level summary first
+        results.append(
             {
-                "File Name": [base_file_name],
-                "Prediction": [prediction],
-                "Avg RADR Score": [avg_radr_score],
-                "Avg RACA Score": [avg_raca_score],
-                "Avg Negative Score": [avg_negative_score],
-                "Times Heard RACA": [times_heard_raca],
-                "Times Heard RADR": [times_heard_radr],
-                "Device ID": [device_id],
-                "Timestamp": [recorded_at],
-                "Temperature": [temperature],
+                "File Name": base_file_name,
+                "Prediction": prediction,
+                "Avg RADR Score": avg_radr_score,
+                "Avg RACA Score": avg_raca_score,
+                "Avg Negative Score": avg_negative_score,
+                "Times Heard RACA": times_heard_raca,
+                "Times Heard RADR": times_heard_radr,
+                "Device ID": device_id,
+                "Timestamp": recorded_at,
+                "Temperature": temperature,
+                "Segment": "N/A",  # Summary row
             }
         )
-        if not new_row.empty:
-            results_df = pd.concat([results_df, new_row], ignore_index=True)
+
+        # Append the detailed information for each segment
+        for idx, (
+            segment_prediction,
+            radr_score,
+            raca_score,
+            negative_score,
+        ) in enumerate(predictions):
+            segment_start = idx * 10
+            segment_end = (idx + 1) * 10
+            segment_range = f"{segment_start}-{segment_end}"
+
+            # Append segment-level information
+            results.append(
+                {
+                    "File Name": f"{base_file_name} (Segment {segment_range})",
+                    "Prediction": segment_prediction,
+                    "RADR Score": radr_score,
+                    "RACA Score": raca_score,
+                    "Negative Score": negative_score,
+                    "Times Heard RACA": "N/A",
+                    "Times Heard RADR": "N/A",
+                    "Device ID": "^",
+                    "Timestamp": "^",
+                    "Temperature": "^",
+                    "Segment": segment_range,  # Segment range for detailed info
+                }
+            )
+
+    # Convert the results list into a DataFrame
+    results_df = pd.DataFrame(results)
 
     return results_df
 
 
-
-# Function to save results
 def save_results(
-    results_df, 
-    results_path, 
-    model_version, 
-    raca_threshold, 
-    radr_threshold
+    results_df,
+    results_path,
+    model_version,
+    raca_threshold,
+    radr_threshold,
+    full_report,
+    summary_report,
+    custom_report,
 ):
     if not results_path.endswith(".xlsx"):
         results_path += ".xlsx"
 
     try:
-        with pd.ExcelWriter(results_path, engine='xlsxwriter') as writer:
-            # Create a summary DataFrame with global information
+        with pd.ExcelWriter(results_path, engine="xlsxwriter") as writer:
+            # Write global information
             global_info_df = pd.DataFrame(
                 {
                     "Model Version": [model_version],
@@ -279,17 +311,58 @@ def save_results(
                     "RADR Threshold": [radr_threshold],
                 }
             )
+            global_info_df.to_excel(
+                writer, sheet_name="Results", index=False, startrow=0
+            )
 
-            # Write the global information at the top
-            global_info_df.to_excel(writer, sheet_name="Results", index=False, startrow=0)
-            
-            # Write the results starting after the global information (row 3)
-            results_df.to_excel(writer, sheet_name="Results", index=False, startrow=4)
-            
+            # Full report: Include all details (file summaries and segment details)
+            if full_report:
+                full_report_df = results_df.copy()
+                full_report_df.to_excel(
+                    writer, sheet_name="Full Report", index=False, startrow=4
+                )
+
+            # Summary report: Only include file summaries, skipping segment details
+            if summary_report:
+                summary_report_df = results_df[results_df["Segment"] == "N/A"]
+                summary_report_df.to_excel(
+                    writer, sheet_name="Summary Report", index=False, startrow=4
+                )
+
+            # Custom report: Adjust based on user selection
+            if custom_report:
+                custom_df = results_df.copy()
+
+                # Remove metadata columns based on user preferences
+                if not custom_report["metadata"]:
+                    custom_df.drop(
+                        ["Device ID", "Timestamp", "Temperature"], axis=1, inplace=True
+                    )
+
+                # Remove segment scores and behave like summary if segment_scores is deselected
+                if not custom_report["segment_scores"]:
+                    # Filter to include only file summaries (skip segment details)
+                    custom_df = custom_df[custom_df["Segment"] == "N/A"]
+                    # Remove average scores as they are segment-level data
+                    custom_df.drop(
+                        ["Avg RADR Score", "Avg RACA Score", "Avg Negative Score"],
+                        axis=1,
+                        inplace=True,
+                    )
+
+                # Remove times heard columns based on user preferences
+                if not custom_report["times_heard_radr"]:
+                    custom_df.drop(["Times Heard RADR"], axis=1, inplace=True)
+                if not custom_report["times_heard_raca"]:
+                    custom_df.drop(["Times Heard RACA"], axis=1, inplace=True)
+
+                custom_df.to_excel(
+                    writer, sheet_name="Custom Report", index=False, startrow=4
+                )
+
         logging.info(f"Results successfully saved to {results_path}")
     except Exception as e:
         logging.error(f"Error saving results: {e}")
-
 
 
 def run_inference(
@@ -301,8 +374,11 @@ def run_inference(
     output_file,
     metadata_dict,
     progress_callback,
-    radr_threshold, 
-    raca_threshold
+    radr_threshold,
+    raca_threshold,
+    full_report,
+    summary_report,
+    custom_report,
 ):
     """
     Runs the inference process on preprocessed audio files to detect Rana Draytonii calls.
@@ -352,13 +428,25 @@ def run_inference(
     )
 
     file_predictions = make_predictions(
-        data_loader, audio_model, audio_files_dataset, progress_callback, radr_threshold, raca_threshold
+        data_loader,
+        audio_model,
+        audio_files_dataset,
+        progress_callback,
+        radr_threshold,
+        raca_threshold,
     )
     metadata_dict = {md["filename"]: md for md in metadata_dict.values()}
-    results_df = aggregate_results(
-        file_predictions, metadata_dict, progress_callback
-    )
+    results_df = aggregate_results(file_predictions, metadata_dict, progress_callback)
 
     results_path = os.path.join(output_dir, output_file)
     logging.debug(f"Results path: {results_path}")
-    save_results(results_df, results_path, model_version, raca_threshold, radr_threshold)
+    save_results(
+        results_df,
+        results_path,
+        model_version,
+        raca_threshold,
+        radr_threshold,
+        full_report,
+        summary_report,
+        custom_report,
+    )
