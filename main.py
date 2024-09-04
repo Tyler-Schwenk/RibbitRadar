@@ -62,7 +62,10 @@ def run_inference(
     update_progress,
     enable_run_button,
     radr_threshold,
-    raca_threshold
+    raca_threshold,
+    full_report,
+    summary_report,
+    custom_report,
 ):
     """
     Runs the complete inference process for detecting Rana Draytonii calls in audio files.
@@ -112,8 +115,11 @@ def run_inference(
             output_file,
             metadata_dict,
             update_progress,
-            radr_threshold, 
-            raca_threshold
+            radr_threshold,
+            raca_threshold,
+            full_report,
+            summary_report,
+            custom_report,
         )
 
         messagebox.showinfo(
@@ -215,6 +221,15 @@ def main():
             ),
             radr_threshold=float(app.radr_threshold_entry.get()),
             raca_threshold=float(app.raca_threshold_entry.get()),
+            # Pass the report options
+            full_report=app.full_report_var.get(),
+            summary_report=app.summary_report_var.get(),
+            custom_report={
+                "metadata": app.include_metadata_var.get(),
+                "segment_scores": app.include_seg_scores_var.get(),
+                "times_heard_radr": app.include_times_heard_radr_var.get(),
+                "times_heard_raca": app.include_times_heard_raca_var.get(),
+            },
         )
     )
 
