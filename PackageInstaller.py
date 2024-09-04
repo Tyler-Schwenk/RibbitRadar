@@ -1,45 +1,21 @@
-# PackageInstaller.py
 import subprocess
 import sys
 import logging
+import os
 
-
-def check_and_install_packages():
-    """Install required Python packages with error handling."""
-    packages_to_install = [
-        "torchaudio",
-        "timm==0.4.5",
-        "wget",
-        "pydub",
-        "requests",
-        "soundfile",
-        "pandas",
-        "openpyxl",
-        "gdown",
-        "google-auth",
-        "google-auth-oauthlib",
-        "google-auth-httplib2",
-        "google-api-python-client",
-        "python-dotenv",
-    ]
-
-    for package in packages_to_install:
+def check_and_install_packages(requirements_file="requirements.txt"):
+    """Install required Python packages from requirements.txt with error handling."""
+    if os.path.exists(requirements_file):
         try:
-            # Check if package is already installed
-            __import__(package.split("==")[0])
-        except ImportError:
-            try:
-                # Attempt to install the package
-                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-                logging.info("Successfully installed %s", package)
-            except subprocess.CalledProcessError as e:
-                logging.error("Failed to install %s. Error: %s", package, e)
-            except Exception as e:
-                logging.error(
-                    "An unexpected error occurred while installing %s. Error: %s",
-                    package,
-                    e,
-                )
+            # Attempt to install packages from requirements.txt
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", requirements_file])
+            logging.info("Successfully installed packages from %s", requirements_file)
+        except subprocess.CalledProcessError as e:
+            logging.error("Failed to install packages from %s. Error: %s", requirements_file, e)
+        except Exception as e:
+            logging.error("An unexpected error occurred while installing packages. Error: %s", e)
+    else:
+        logging.error("Requirements file %s not found", requirements_file)
 
 
 if __name__ == "__main__":

@@ -61,7 +61,7 @@ def initialize_model(checkpoint_path):
     return audio_model.to(torch.device("cpu")).eval()
 
 
-def make_predictions(data_loader, audio_model, audio_files_dataset, progress_callback):
+def make_predictions(data_loader, audio_model, audio_files_dataset, progress_callback, radr_threshold, raca_threshold):
     logging.debug("Starting make_predictions function")
     file_predictions = defaultdict(list)
     total_processed_files = 0
@@ -109,7 +109,7 @@ def make_predictions(data_loader, audio_model, audio_files_dataset, progress_cal
             negative_score = file_result[2]
 
             # Determine prediction
-            prediction = determine_prediction((radr_score, raca_score, negative_score))
+            prediction = determine_prediction((radr_score, raca_score, negative_score), radr_threshold, raca_threshold)
             file_predictions[base_file_name].append(
                 (prediction, radr_score, raca_score, negative_score)
             )
@@ -137,13 +137,14 @@ def group_consecutive_elements(data):
     return ranges
 
 
-def determine_prediction(scores, threshold=0.5):
+def determine_prediction(scores, radr_threshold, raca_threshold):
     """
     Determines the prediction based on the scores for RADR and RACA.
 
     Args:
         scores (tuple): A tuple containing the scores for RADR, RACA, and Negative.
-        threshold (float): The threshold above which a score is considered positive.
+        radr_threshold (float): The threshold above which a RADR score is considered positive.
+        raca_threshold (float): The threshold above which a RACA score is considered positive.
 
     Returns:
         str: The prediction based on the scores.
@@ -151,9 +152,9 @@ def determine_prediction(scores, threshold=0.5):
     radr_score, raca_score, negative_score = scores
 
     predictions = []
-    if radr_score > threshold:
+    if radr_score >= radr_threshold:
         predictions.append("RADR")
-    if raca_score > threshold:
+    if raca_score >= raca_threshold:
         predictions.append("RACA")
     if not predictions:
         predictions.append("Negative")
@@ -161,9 +162,8 @@ def determine_prediction(scores, threshold=0.5):
     return ", ".join(predictions)
 
 
-# Function to aggregate results
 def aggregate_results(
-    file_predictions, metadata_dict, model_version, progress_callback
+    file_predictions, metadata_dict, progress_callback
 ):
     progress_callback(
         "Inference Step 3/3: aggregating results...",
@@ -172,45 +172,60 @@ def aggregate_results(
     )
     results_df = pd.DataFrame(
         columns=[
-            "Model Version ID",
             "File Name",
             "Prediction",
             "Avg RADR Score",
             "Avg RACA Score",
             "Avg Negative Score",
-            "Times Heard",
+            "Times Heard RACA",
+            "Times Heard RADR",
             "Device ID",
             "Timestamp",
             "Temperature",
-            "Review Date",
         ]
     )
 
-    # Iterate over the predictions and store the results
     for base_file_name, predictions in file_predictions.items():
-        # Extract predictions and scores
-        heard_segments = [
-            i for i, (pred, _, _, _) in enumerate(predictions) if pred != "Negative"
+        # Extract predictions and scores for each segment
+        heard_segments_radr = [
+            i for i, (pred, radr_score, _, _) in enumerate(predictions) if "RADR" in pred
         ]
+        heard_segments_raca = [
+            i for i, (pred, _, raca_score, _) in enumerate(predictions) if "RACA" in pred
+        ]
+        
+        # Scores for aggregating
         radr_scores = [score for _, score, _, _ in predictions]
         raca_scores = [score for _, _, score, _ in predictions]
         negative_scores = [score for _, _, _, score in predictions]
 
-        # Compute average scores for the entire audio file
+        # Compute average scores
         avg_radr_score = sum(radr_scores) / len(radr_scores)
         avg_raca_score = sum(raca_scores) / len(raca_scores)
         avg_negative_score = sum(negative_scores) / len(negative_scores)
 
-        if len(heard_segments) == 0:
-            times_str = "N/A"
+        # Determine the prediction for the whole file based on heard segments
+        if heard_segments_radr and heard_segments_raca:
+            prediction = "RADR, RACA"
+        elif heard_segments_radr:
+            prediction = "RADR"
+        elif heard_segments_raca:
+            prediction = "RACA"
         else:
-            heard_ranges = group_consecutive_elements(heard_segments)
-            times_str = ", ".join(f"{s*10}-{(e+1)*10}" for s, e in heard_ranges)
+            prediction = "Negative"
 
-        # Get the prediction
-        prediction = determine_prediction(
-            (avg_radr_score, avg_raca_score, avg_negative_score)
-        )
+        # Group consecutive segments where RACA and RADR were heard
+        if len(heard_segments_raca) == 0:
+            times_heard_raca = "N/A"
+        else:
+            heard_ranges_raca = group_consecutive_elements(heard_segments_raca)
+            times_heard_raca = ", ".join(f"{s*10}-{(e+1)*10}" for s, e in heard_ranges_raca)
+
+        if len(heard_segments_radr) == 0:
+            times_heard_radr = "N/A"
+        else:
+            heard_ranges_radr = group_consecutive_elements(heard_segments_radr)
+            times_heard_radr = ", ".join(f"{s*10}-{(e+1)*10}" for s, e in heard_ranges_radr)
 
         # Try to get metadata for both .WAV and .wav versions of the file
         metadata = metadata_dict.get(
@@ -220,19 +235,19 @@ def aggregate_results(
         recorded_at = metadata.get("recorded_at")
         temperature = metadata.get("temperature")
 
+        # Append results to the dataframe
         new_row = pd.DataFrame(
             {
-                "Model Version ID": [model_version],
                 "File Name": [base_file_name],
                 "Prediction": [prediction],
                 "Avg RADR Score": [avg_radr_score],
                 "Avg RACA Score": [avg_raca_score],
                 "Avg Negative Score": [avg_negative_score],
-                "Times Heard": [times_str],
+                "Times Heard RACA": [times_heard_raca],
+                "Times Heard RADR": [times_heard_radr],
                 "Device ID": [device_id],
                 "Timestamp": [recorded_at],
                 "Temperature": [temperature],
-                "Review Date": [datetime.now().strftime("%Y-%m-%d")],
             }
         )
         if not new_row.empty:
@@ -241,16 +256,40 @@ def aggregate_results(
     return results_df
 
 
+
 # Function to save results
-def save_results(results_df, results_path):
+def save_results(
+    results_df, 
+    results_path, 
+    model_version, 
+    raca_threshold, 
+    radr_threshold
+):
     if not results_path.endswith(".xlsx"):
         results_path += ".xlsx"
 
     try:
-        results_df.to_excel(results_path, index=False)
+        with pd.ExcelWriter(results_path, engine='xlsxwriter') as writer:
+            # Create a summary DataFrame with global information
+            global_info_df = pd.DataFrame(
+                {
+                    "Model Version": [model_version],
+                    "Review Date": [datetime.now().strftime("%Y-%m-%d")],
+                    "RACA Threshold": [raca_threshold],
+                    "RADR Threshold": [radr_threshold],
+                }
+            )
+
+            # Write the global information at the top
+            global_info_df.to_excel(writer, sheet_name="Results", index=False, startrow=0)
+            
+            # Write the results starting after the global information (row 3)
+            results_df.to_excel(writer, sheet_name="Results", index=False, startrow=4)
+            
         logging.info(f"Results successfully saved to {results_path}")
     except Exception as e:
         logging.error(f"Error saving results: {e}")
+
 
 
 def run_inference(
@@ -262,6 +301,8 @@ def run_inference(
     output_file,
     metadata_dict,
     progress_callback,
+    radr_threshold, 
+    raca_threshold
 ):
     """
     Runs the inference process on preprocessed audio files to detect Rana Draytonii calls.
@@ -311,13 +352,13 @@ def run_inference(
     )
 
     file_predictions = make_predictions(
-        data_loader, audio_model, audio_files_dataset, progress_callback
+        data_loader, audio_model, audio_files_dataset, progress_callback, radr_threshold, raca_threshold
     )
     metadata_dict = {md["filename"]: md for md in metadata_dict.values()}
     results_df = aggregate_results(
-        file_predictions, metadata_dict, model_version, progress_callback
+        file_predictions, metadata_dict, progress_callback
     )
 
     results_path = os.path.join(output_dir, output_file)
     logging.debug(f"Results path: {results_path}")
-    save_results(results_df, results_path)
+    save_results(results_df, results_path, model_version, raca_threshold, radr_threshold)
