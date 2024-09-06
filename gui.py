@@ -155,7 +155,7 @@ class RibbitRadarGUI:
         )
         self.radr_threshold_entry = ttk.Entry(main_frame)
         self.radr_threshold_entry.grid(column=1, row=11, padx=10, pady=10)
-        self.radr_threshold_entry.insert(0, "0.75")  # Default value
+        self.radr_threshold_entry.insert(0, "0.90")  # Default value
 
         # RACA Threshold
         ttk.Label(main_frame, text="RACA Threshold (0-1):").grid(
@@ -163,7 +163,7 @@ class RibbitRadarGUI:
         )
         self.raca_threshold_entry = ttk.Entry(main_frame)
         self.raca_threshold_entry.grid(column=1, row=10, padx=10, pady=10)
-        self.raca_threshold_entry.insert(0, "0.75")  # Default value
+        self.raca_threshold_entry.insert(0, "0.85")  # Default value
 
         # Add report selection section
         report_frame = ttk.LabelFrame(self.root, text="Report Options", padding=10)
