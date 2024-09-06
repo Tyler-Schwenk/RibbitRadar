@@ -241,9 +241,6 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback):
             {
                 "File Name": base_file_name,
                 "Prediction": prediction,
-                "Avg RADR Score": avg_radr_score,
-                "Avg RACA Score": avg_raca_score,
-                "Avg Negative Score": avg_negative_score,
                 "Times Heard RACA": times_heard_raca,
                 "Times Heard RADR": times_heard_radr,
                 "Device ID": device_id,
@@ -302,6 +299,20 @@ def save_results(
 
     try:
         with pd.ExcelWriter(results_path, engine="xlsxwriter") as writer:
+            workbook = writer.book
+
+            # Define center alignment format
+            center_format = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
+            # Define thicker border format
+            thick_border_format = workbook.add_format({'bottom': 2, 'align': 'center', 'valign': 'vcenter'})
+
+            # Function to adjust column width automatically
+            def adjust_column_width(worksheet, df):
+                for i, col in enumerate(df.columns):
+                    # Find the length of the longest value in the column
+                    max_length = max(df[col].astype(str).map(len).max(), len(col)) + 2
+                    worksheet.set_column(i, i, max_length)
+
             # Write global information
             global_info_df = pd.DataFrame(
                 {
@@ -315,19 +326,43 @@ def save_results(
                 writer, sheet_name="Results", index=False, startrow=0
             )
 
+            worksheet = writer.sheets["Results"]
+            worksheet.set_column(0, len(global_info_df.columns) - 1, None, center_format)
+            worksheet.freeze_panes(1, 2)  # Freezes the first row
+            adjust_column_width(worksheet, global_info_df)
+
             # Full report: Include all details (file summaries and segment details)
             if full_report:
                 full_report_df = results_df.copy()
                 full_report_df.to_excel(
-                    writer, sheet_name="Full Report", index=False, startrow=4
+                    writer, sheet_name="Full Report", index=False
                 )
+                full_report_worksheet = writer.sheets["Full Report"]
+                full_report_worksheet.set_column(0, len(full_report_df.columns) - 1, None, center_format)
+                full_report_worksheet.freeze_panes(1, 2)  # Freezes the first row
+                adjust_column_width(full_report_worksheet, full_report_df)
+
+                # Apply center alignment and thicker borders before each file-level summary row
+                for idx, row in full_report_df.iterrows():
+                    full_report_worksheet.set_row(idx + 1, None, center_format)
+                    if row["Segment"] == "N/A":  # File-level summary
+                        full_report_worksheet.set_row(idx, None, thick_border_format)  # Apply thick border to previous row
 
             # Summary report: Only include file summaries, skipping segment details
             if summary_report:
                 summary_report_df = results_df[results_df["Segment"] == "N/A"]
                 summary_report_df.to_excel(
-                    writer, sheet_name="Summary Report", index=False, startrow=4
+                    writer, sheet_name="Summary Report", index=False
                 )
+                summary_worksheet = writer.sheets["Summary Report"]
+                summary_worksheet.set_column(0, len(summary_report_df.columns) - 1, None, center_format)
+                summary_worksheet.freeze_panes(1, 2)  # Freezes the first row
+                adjust_column_width(summary_worksheet, summary_report_df)
+
+                # Apply center alignment and thicker borders before each file-level summary row
+                for idx, row in summary_report_df.iterrows():
+                    summary_worksheet.set_row(idx + 1, None, center_format)
+                    summary_worksheet.set_row(idx, None, thick_border_format)
 
             # Custom report: Adjust based on user selection
             if custom_report:
@@ -341,28 +376,73 @@ def save_results(
 
                 # Remove segment scores and behave like summary if segment_scores is deselected
                 if not custom_report["segment_scores"]:
-                    # Filter to include only file summaries (skip segment details)
                     custom_df = custom_df[custom_df["Segment"] == "N/A"]
-                    # Remove average scores as they are segment-level data
                     custom_df.drop(
-                        ["Avg RADR Score", "Avg RACA Score", "Avg Negative Score"],
+                        ["RADR Score", "RACA Score", "Negative Score"],
                         axis=1,
                         inplace=True,
                     )
 
-                # Remove times heard columns based on user preferences
                 if not custom_report["times_heard_radr"]:
                     custom_df.drop(["Times Heard RADR"], axis=1, inplace=True)
                 if not custom_report["times_heard_raca"]:
                     custom_df.drop(["Times Heard RACA"], axis=1, inplace=True)
 
                 custom_df.to_excel(
-                    writer, sheet_name="Custom Report", index=False, startrow=4
+                    writer, sheet_name="Custom Report", index=False
                 )
+                custom_worksheet = writer.sheets["Custom Report"]
+                custom_worksheet.set_column(0, len(custom_df.columns) - 1, None, center_format)
+                custom_worksheet.freeze_panes(1, 2)
+                adjust_column_width(custom_worksheet, custom_df)
+
+                # Apply center alignment and thicker borders before each file-level summary row
+                for idx, row in custom_df.iterrows():
+                    custom_worksheet.set_row(idx + 1, None, center_format)
+                    if row["Segment"] == "N/A":
+                        custom_worksheet.set_row(idx, None, thick_border_format)
+
+            # Apply conditional formatting to highlight specific keywords for all reports
+            for sheet_name in ["Full Report", "Summary Report", "Custom Report"]:
+                if sheet_name in writer.sheets:
+                    worksheet = writer.sheets[sheet_name]
+
+                    # Highlight "RACA" cells in yellow
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'RACA',
+                        'format': workbook.add_format({'bg_color': '#FFFF00'})
+                    })
+
+                    # Highlight "RADR" cells in light green
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'RADR',
+                        'format': workbook.add_format({'bg_color': '#C6EFCE'})
+                    })
+
+                    # Highlight "Negative" cells in rose
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'Negative',
+                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
+                    })
+
+                    # Highlight "RADR, RACA" cells in light blue
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'RADR, RACA',
+                        'format': workbook.add_format({'bg_color': '#ADD8E6'})
+                    })
 
         logging.info(f"Results successfully saved to {results_path}")
     except Exception as e:
         logging.error(f"Error saving results: {e}")
+
 
 
 def run_inference(
@@ -436,6 +516,7 @@ def run_inference(
         raca_threshold,
     )
     metadata_dict = {md["filename"]: md for md in metadata_dict.values()}
+    logging.info(f"Aggregating Results...")
     results_df = aggregate_results(file_predictions, metadata_dict, progress_callback)
 
     results_path = os.path.join(output_dir, output_file)
