@@ -423,11 +423,39 @@ def save_results(
                         'format': workbook.add_format({'bg_color': '#C6EFCE'})
                     })
 
-                    # Highlight "Negative" cells in rose
+                    # Highlight "Negative", "negative", "no", "No", or "NO" cells in rose
                     worksheet.conditional_format('A1:Z1000', {
                         'type': 'text',
                         'criteria': 'containing',
                         'value': 'Negative',
+                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
+                    })
+
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'negative',
+                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
+                    })
+
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'no',
+                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
+                    })
+
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'No',
+                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
+                    })
+
+                    worksheet.conditional_format('A1:Z1000', {
+                        'type': 'text',
+                        'criteria': 'containing',
+                        'value': 'NO',
                         'format': workbook.add_format({'bg_color': '#FFC7CE'})
                     })
 
