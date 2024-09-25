@@ -35,6 +35,16 @@ LOCAL_MODEL_DIR = "model"
 
 
 def generate_unique_filename(directory, filename):
+    """
+    Generates a unique filename by appending a counter if a file with the same name already exists in the directory.
+
+    Parameters:
+    directory (str): The directory where the file will be saved.
+    filename (str): The base name of the file (with or without extension).
+
+    Returns:
+    str: A unique filename that does not conflict with existing files in the directory.
+    """
     base, extension = os.path.splitext(filename)
     if not extension:
         extension = ".xlsx"  # Default to .xlsx if no extension is provided
@@ -67,7 +77,7 @@ def run_inference(
     summary_report,
     custom_report,
     label_choice,
-    prediction_mode
+    prediction_mode,
 ):
     """
     Runs the complete inference process for detecting Rana Draytonii calls in audio files.
@@ -90,6 +100,13 @@ def run_inference(
     model_version (str): Version number of the model.
     update_progress (function): Callback function for updating progress.
     enable_run_button (function): Callback function to re-enable the Run button.
+    radr_threshold (float): Threshold value for RADR detection.
+    raca_threshold (float): Threshold value for RACA detection.
+    full_report (bool): Whether to generate a full report.
+    summary_report (bool): Whether to generate a summary report.
+    custom_report (dict): Dictionary specifying custom report options.
+    label_choice (list): List of label choices for prediction.
+    prediction_mode (str): Mode for making predictions, either 'Threshold' or 'Highest Score'.
 
     Returns:
     None
@@ -123,7 +140,7 @@ def run_inference(
             summary_report,
             custom_report,
             label_choice,
-            prediction_mode
+            prediction_mode,
         )
 
         messagebox.showinfo(
@@ -168,6 +185,12 @@ def main():
     splash.attributes("-topmost", True)  # Make splash screen the topmost window
 
     def update_splash_progress(message):
+        """
+        Updates the splash screen progress message.
+
+        Parameters:
+        message (str): The progress message to display on the splash screen.
+        """
         splash.progress_label.config(text=message)
         splash.update_idletasks()
 
@@ -234,8 +257,8 @@ def main():
                 "times_heard_radr": app.include_times_heard_radr_var.get(),
                 "times_heard_raca": app.include_times_heard_raca_var.get(),
             },
-            label_choice=app.label_choice_var.get().split(', '),
-            prediction_mode=app.prediction_mode_var.get()
+            label_choice=app.label_choice_var.get().split(", "),
+            prediction_mode=app.prediction_mode_var.get(),
         )
     )
 

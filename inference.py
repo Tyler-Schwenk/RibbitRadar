@@ -12,6 +12,17 @@ import logging
 
 
 def make_features(waveform, mel_bins, target_length=1000):
+    """
+    Create Mel-frequency filterbank (fbank) features from the input waveform.
+
+    Args:
+        waveform (torch.Tensor): The audio waveform tensor.
+        mel_bins (int): The number of Mel bins to use in the filterbank.
+        target_length (int, optional): The target number of frames in the output. Defaults to 1000.
+
+    Returns:
+        torch.Tensor: The computed Mel-frequency filterbank features, padded or truncated to the target length.
+    """
     sr = 16000  # the sample rate is always 16kHz
 
     fbank = torchaudio.compliance.kaldi.fbank(
@@ -39,14 +50,33 @@ def make_features(waveform, mel_bins, target_length=1000):
 
 
 def make_features_fixed(wav_name):
+    """
+    Extract Mel-frequency features from a waveform file.
+
+    Args:
+        wav_name (str): The path to the audio file (wav format).
+
+    Returns:
+        torch.Tensor: The extracted Mel-frequency features.
+    """
     waveform, sr = torchaudio.load(wav_name)
     return make_features(waveform, mel_bins=128)
 
 
 # Function to initialize and load the model
 def initialize_model(checkpoint_path, label_dim):
+    """
+    Initialize and load the AST model with the given label dimension and checkpoint.
+
+    Args:
+        checkpoint_path (str): Path to the model checkpoint (state dict).
+        label_dim (int): Number of labels the model will predict.
+
+    Returns:
+        torch.nn.Module: The initialized and loaded AST model in evaluation mode.
+    """
     model = ASTModel(
-        label_dim=label_dim, 
+        label_dim=label_dim,
         fstride=10,
         tstride=10,
         input_fdim=128,
@@ -69,8 +99,24 @@ def make_predictions(
     radr_threshold,
     raca_threshold,
     label_choice,
-    prediction_mode
+    prediction_mode,
 ):
+    """
+    Generate predictions for audio files using the AST model.
+
+    Args:
+        data_loader (torch.utils.data.DataLoader): The data loader for audio features.
+        audio_model (torch.nn.Module): The loaded AST model.
+        audio_files_dataset (DataSet): The dataset containing the audio files.
+        progress_callback (function): Callback function to update progress.
+        radr_threshold (float): The threshold for classifying RADR as positive.
+        raca_threshold (float): The threshold for classifying RACA as positive.
+        label_choice (list of str): The labels being used (RADR, RACA, Negative).
+        prediction_mode (str): The mode for prediction (either 'Threshold' or 'Highest Score').
+
+    Returns:
+        dict: A dictionary containing the predictions for each audio file.
+    """
     logging.debug("Starting make_predictions function")
     file_predictions = defaultdict(list)
     total_processed_files = 0
@@ -117,11 +163,15 @@ def make_predictions(
                 if "RADR" in label_choice:
                     positive_score = file_result[0]  # RADR score
                     negative_score = file_result[1]  # Negative score
-                    prediction = "RADR" if positive_score >= radr_threshold else "Negative"
+                    prediction = (
+                        "RADR" if positive_score >= radr_threshold else "Negative"
+                    )
                 elif "RACA" in label_choice:
                     positive_score = file_result[0]  # RACA score
                     negative_score = file_result[1]  # Negative score
-                    prediction = "RACA" if positive_score >= raca_threshold else "Negative"
+                    prediction = (
+                        "RACA" if positive_score >= raca_threshold else "Negative"
+                    )
             else:  # Handle the three-label system (RADR, RACA, Negative)
                 radr_score = file_result[0]
                 raca_score = file_result[1]
@@ -129,19 +179,20 @@ def make_predictions(
 
                 # Determine the prediction based on both thresholds
                 prediction = determine_prediction(
-                    (radr_score, raca_score, negative_score), radr_threshold, raca_threshold, prediction_mode
+                    (radr_score, raca_score, negative_score),
+                    radr_threshold,
+                    raca_threshold,
+                    prediction_mode,
                 )
 
             # Store the prediction for the file
-            file_predictions[base_file_name].append(
-                (prediction, *file_result)
-            )
+            file_predictions[base_file_name].append((prediction, *file_result))
 
         total_processed_files += len(batch)
         percent_processed = total_processed_files / len(audio_files_dataset.files)
         progress_callback(
             f"Inference Step 2/3 (the big one): Creating predictions...{total_processed_files}/{len(audio_files_dataset.files)}",
-            int(percent_processed),
+            int(percent_processed * 100),
             f"Inference Step 2/3 (the big one): Creating predictions...{total_processed_files}/{len(audio_files_dataset.files)}",
         )
         logging.debug(
@@ -153,6 +204,15 @@ def make_predictions(
 
 # Group the segments into consecutive ranges
 def group_consecutive_elements(data):
+    """
+    Group consecutive numbers in the input list.
+
+    Args:
+        data (list): A list of integers representing indices.
+
+    Returns:
+        list: A list of tuples, where each tuple represents a start and end of consecutive numbers.
+    """
     ranges = []
     for k, g in itertools.groupby(enumerate(data), lambda ix: ix[0] - ix[1]):
         consecutive_elements = list(map(lambda x: x[1], g))
@@ -162,19 +222,20 @@ def group_consecutive_elements(data):
 
 def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode):
     """
-    Determines the prediction based on the scores for RADR and RACA.
+    Determines the prediction based on the scores for RADR, RACA, and Negative.
 
     Args:
         scores (tuple): A tuple containing the scores for RADR, RACA, and Negative.
         radr_threshold (float): The threshold above which a RADR score is considered positive.
         raca_threshold (float): The threshold above which a RACA score is considered positive.
+        prediction_mode (str): The mode to use for determining predictions ('Threshold' or 'Highest Score').
 
     Returns:
         str: The prediction based on the scores.
     """
     radr_score, raca_score, negative_score = scores
 
-    if prediction_mode == 'Highest Score':
+    if prediction_mode == "Highest Score":
         # Select the label with the highest score
         max_score = max(radr_score, raca_score, negative_score)
         if max_score == radr_score:
@@ -184,7 +245,7 @@ def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode
         else:
             return "Negative"
 
-    elif prediction_mode == 'Threshold':
+    elif prediction_mode == "Threshold":
         predictions = []
         if radr_score >= radr_threshold:
             predictions.append("RADR")
@@ -197,6 +258,18 @@ def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode
 
 
 def aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice):
+    """
+    Aggregates the segment-level predictions into a file-level summary.
+
+    Args:
+        file_predictions (dict): The predictions for each segment of the files.
+        metadata_dict (dict): Metadata information for each file (e.g., device ID, timestamp, etc.).
+        progress_callback (function): Callback function to update progress.
+        label_choice (list): List of labels used in prediction (e.g., ['RADR', 'Negative']).
+
+    Returns:
+        pd.DataFrame: A DataFrame containing both file-level and segment-level details of the predictions.
+    """
     progress_callback(
         "Inference Step 3/3: aggregating results...",
         95,
@@ -206,7 +279,7 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback, label_
     results = []  # List to store both the summary and detailed segment information
 
     for base_file_name, predictions in file_predictions.items():
-         # Handle 2-label or 3-label cases dynamically
+        # Handle 2-label or 3-label cases dynamically
         num_labels = len(predictions[0]) - 1  # Exclude the prediction text itself
         heard_segments_radr = []
         heard_segments_raca = []
@@ -214,12 +287,14 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback, label_
         if num_labels == 2:
             if "RADR" in predictions[0][0]:
                 heard_segments_radr = [
-                    i for i, (pred, radr_score, negative_score) in enumerate(predictions)
+                    i
+                    for i, (pred, radr_score, negative_score) in enumerate(predictions)
                     if "RADR" in pred
                 ]
             elif "RACA" in predictions[0][0]:
                 heard_segments_raca = [
-                    i for i, (pred, raca_score, negative_score) in enumerate(predictions)
+                    i
+                    for i, (pred, raca_score, negative_score) in enumerate(predictions)
                     if "RACA" in pred
                 ]
             radr_scores = [score for _, score, _ in predictions]
@@ -228,11 +303,13 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback, label_
 
         elif num_labels == 3:  # Handle the three-label system (RADR, RACA, Negative)
             heard_segments_radr = [
-                i for i, (pred, radr_score, _, _) in enumerate(predictions)
+                i
+                for i, (pred, radr_score, _, _) in enumerate(predictions)
                 if "RADR" in pred
             ]
             heard_segments_raca = [
-                i for i, (pred, _, raca_score, _) in enumerate(predictions)
+                i
+                for i, (pred, _, raca_score, _) in enumerate(predictions)
                 if "RACA" in pred
             ]
             radr_scores = [score for _, score, _, _ in predictions]
@@ -289,7 +366,7 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback, label_
         # Append the detailed information for each segment
         for idx, (
             segment_prediction,
-            *scores  # Variable length to handle both 2-label and 3-label cases
+            *scores,  # Variable length to handle both 2-label and 3-label cases
         ) in enumerate(predictions):
             segment_start = idx * 10
             segment_end = (idx + 1) * 10
@@ -338,6 +415,22 @@ def save_results(
     summary_report,
     custom_report,
 ):
+    """
+    Save the prediction results to an Excel file with optional formatting and conditional formatting.
+
+    Args:
+        results_df (pd.DataFrame): DataFrame containing the results.
+        results_path (str): Path to save the Excel file.
+        model_version (str): The version of the model used.
+        raca_threshold (float): The threshold for RACA classification.
+        radr_threshold (float): The threshold for RADR classification.
+        full_report (bool): Whether to include the full report.
+        summary_report (bool): Whether to include the summary report.
+        custom_report (dict): Custom report settings (include metadata, segment scores, etc.).
+
+    Returns:
+        None
+    """
     if not results_path.endswith(".xlsx"):
         results_path += ".xlsx"
 
@@ -346,9 +439,13 @@ def save_results(
             workbook = writer.book
 
             # Define center alignment format
-            center_format = workbook.add_format({'align': 'center', 'valign': 'vcenter'})
+            center_format = workbook.add_format(
+                {"align": "center", "valign": "vcenter"}
+            )
             # Define thicker border format
-            thick_border_format = workbook.add_format({'bottom': 2, 'align': 'center', 'valign': 'vcenter'})
+            thick_border_format = workbook.add_format(
+                {"bottom": 2, "align": "center", "valign": "vcenter"}
+            )
 
             # Function to adjust column width automatically
             def adjust_column_width(worksheet, df):
@@ -371,18 +468,20 @@ def save_results(
             )
 
             worksheet = writer.sheets["Results"]
-            worksheet.set_column(0, len(global_info_df.columns) - 1, None, center_format)
+            worksheet.set_column(
+                0, len(global_info_df.columns) - 1, None, center_format
+            )
             worksheet.freeze_panes(1, 2)  # Freezes the first row
             adjust_column_width(worksheet, global_info_df)
 
             # Full report: Include all details (file summaries and segment details)
             if full_report:
                 full_report_df = results_df.copy()
-                full_report_df.to_excel(
-                    writer, sheet_name="Full Report", index=False
-                )
+                full_report_df.to_excel(writer, sheet_name="Full Report", index=False)
                 full_report_worksheet = writer.sheets["Full Report"]
-                full_report_worksheet.set_column(0, len(full_report_df.columns) - 1, None, center_format)
+                full_report_worksheet.set_column(
+                    0, len(full_report_df.columns) - 1, None, center_format
+                )
                 full_report_worksheet.freeze_panes(1, 2)  # Freezes the first row
                 adjust_column_width(full_report_worksheet, full_report_df)
 
@@ -390,7 +489,9 @@ def save_results(
                 for idx, row in full_report_df.iterrows():
                     full_report_worksheet.set_row(idx + 1, None, center_format)
                     if row["Segment"] == "N/A":  # File-level summary
-                        full_report_worksheet.set_row(idx, None, thick_border_format)  # Apply thick border to previous row
+                        full_report_worksheet.set_row(
+                            idx, None, thick_border_format
+                        )  # Apply thick border to previous row
 
             # Summary report: Only include file summaries, skipping segment details
             if summary_report:
@@ -399,7 +500,9 @@ def save_results(
                     writer, sheet_name="Summary Report", index=False
                 )
                 summary_worksheet = writer.sheets["Summary Report"]
-                summary_worksheet.set_column(0, len(summary_report_df.columns) - 1, None, center_format)
+                summary_worksheet.set_column(
+                    0, len(summary_report_df.columns) - 1, None, center_format
+                )
                 summary_worksheet.freeze_panes(1, 2)  # Freezes the first row
                 adjust_column_width(summary_worksheet, summary_report_df)
 
@@ -432,11 +535,11 @@ def save_results(
                 if not custom_report["times_heard_raca"]:
                     custom_df.drop(["Times Heard RACA"], axis=1, inplace=True)
 
-                custom_df.to_excel(
-                    writer, sheet_name="Custom Report", index=False
-                )
+                custom_df.to_excel(writer, sheet_name="Custom Report", index=False)
                 custom_worksheet = writer.sheets["Custom Report"]
-                custom_worksheet.set_column(0, len(custom_df.columns) - 1, None, center_format)
+                custom_worksheet.set_column(
+                    0, len(custom_df.columns) - 1, None, center_format
+                )
                 custom_worksheet.freeze_panes(1, 2)
                 adjust_column_width(custom_worksheet, custom_df)
 
@@ -452,69 +555,92 @@ def save_results(
                     worksheet = writer.sheets[sheet_name]
 
                     # Highlight "RACA" cells in yellow
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'RACA',
-                        'format': workbook.add_format({'bg_color': '#FFFF00'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "RACA",
+                            "format": workbook.add_format({"bg_color": "#FFFF00"}),
+                        },
+                    )
 
                     # Highlight "RADR" cells in light green
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'RADR',
-                        'format': workbook.add_format({'bg_color': '#C6EFCE'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "RADR",
+                            "format": workbook.add_format({"bg_color": "#C6EFCE"}),
+                        },
+                    )
 
                     # Highlight "Negative", "negative", "no", "No", or "NO" cells in rose
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'Negative',
-                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "Negative",
+                            "format": workbook.add_format({"bg_color": "#FFC7CE"}),
+                        },
+                    )
 
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'negative',
-                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "negative",
+                            "format": workbook.add_format({"bg_color": "#FFC7CE"}),
+                        },
+                    )
 
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'no',
-                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "no",
+                            "format": workbook.add_format({"bg_color": "#FFC7CE"}),
+                        },
+                    )
 
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'No',
-                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "No",
+                            "format": workbook.add_format({"bg_color": "#FFC7CE"}),
+                        },
+                    )
 
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'NO',
-                        'format': workbook.add_format({'bg_color': '#FFC7CE'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "NO",
+                            "format": workbook.add_format({"bg_color": "#FFC7CE"}),
+                        },
+                    )
 
                     # Highlight "RADR, RACA" cells in light blue
-                    worksheet.conditional_format('A1:Z1000', {
-                        'type': 'text',
-                        'criteria': 'containing',
-                        'value': 'RADR, RACA',
-                        'format': workbook.add_format({'bg_color': '#ADD8E6'})
-                    })
+                    worksheet.conditional_format(
+                        "A1:Z1000",
+                        {
+                            "type": "text",
+                            "criteria": "containing",
+                            "value": "RADR, RACA",
+                            "format": workbook.add_format({"bg_color": "#ADD8E6"}),
+                        },
+                    )
 
         logging.info(f"Results successfully saved to {results_path}")
     except Exception as e:
         logging.error(f"Error saving results: {e}")
-
 
 
 def run_inference(
@@ -532,31 +658,30 @@ def run_inference(
     summary_report,
     custom_report,
     label_choice,
-    prediction_mode
+    prediction_mode,
 ):
     """
-    Runs the inference process on preprocessed audio files to detect Rana Draytonii calls.
+    Runs the full inference process to predict frog calls in audio files and generates a report.
 
-    This function performs the following steps:
-    1. Initializes the AST model with the specified checkpoint.
-    2. Loads and preprocesses audio files from the resampled audio directory.
-    3. Runs predictions on the audio segments using the model.
-    4. Aggregates results and metadata.
-    5. Generates an Excel report with the inference results.
-
-    Parameters:
-    labels_path (str): The path to the labels.csv file.
-    checkpoint_path (str): The path to the model weights file (e.g., best_audio_model_V2.pth).
-    resampled_audio_dir (str): Path to the directory containing resampled audio files.
-    model_version (str): Number indicating the model version.
-    output_dir (str): Directory where the results will be saved.
-    output_file (str): Name of the output Excel file.
-    metadata_dict (dict): Dictionary containing metadata for the audio files.
-    progress_callback (function): A callback function for updating the progress of the inference process.
-        This function should accept three parameters: a message (str), a progress value (float or int), and a log message (str).
+    Args:
+        labels_path (str): Path to the labels CSV.
+        checkpoint_path (str): Path to the model checkpoint file.
+        resampled_audio_dir (str): Directory containing resampled audio files.
+        model_version (str): The version of the model being used.
+        output_dir (str): Directory to save the output results.
+        output_file (str): Name of the output Excel file.
+        metadata_dict (dict): Metadata for the audio files.
+        progress_callback (function): Callback function for progress updates.
+        radr_threshold (float): Threshold for RADR classification.
+        raca_threshold (float): Threshold for RACA classification.
+        full_report (bool): Whether to include the full report.
+        summary_report (bool): Whether to include the summary report.
+        custom_report (dict): Custom report options.
+        label_choice (list): The labels to be used (e.g., ['RADR', 'RACA', 'Negative']).
+        prediction_mode (str): The prediction mode ('Threshold' or 'Highest Score').
 
     Returns:
-    None
+        None
     """
     logging.debug(f"resampled_audio_dir: {resampled_audio_dir}")
     # Check if resampled_audio_dir is a string and points to a directory
@@ -592,11 +717,13 @@ def run_inference(
         radr_threshold,
         raca_threshold,
         label_choice,
-        prediction_mode
+        prediction_mode,
     )
     metadata_dict = {md["filename"]: md for md in metadata_dict.values()}
     logging.info(f"Aggregating Results...")
-    results_df = aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice)
+    results_df = aggregate_results(
+        file_predictions, metadata_dict, progress_callback, label_choice
+    )
 
     results_path = os.path.join(output_dir, output_file)
     logging.debug(f"Results path: {results_path}")

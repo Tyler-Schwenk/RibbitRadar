@@ -11,12 +11,14 @@ class RibbitRadarGUI:
 
     Attributes:
     root (tk.Tk): The main window of the application.
-    preprocess_audio_callback (function): A callback function for preprocessing audio.
+    resampled_audio_path (str): Path to the directory where resampled audio files will be saved.
+    inference_callback (function): A callback function for running inference, initialized as None.
+    update_queue (queue.Queue): A queue to manage the update of GUI elements.
     """
 
     def __init__(self, root, resampled_audio_path):
         """
-        Constructs all the necessary attributes for the RibbitRadarGUI object.
+        Constructs the RibbitRadarGUI object and initializes the GUI widgets.
 
         Parameters:
         root (tk.Tk): The main window of the application.
@@ -34,11 +36,14 @@ class RibbitRadarGUI:
         Sets the callback function for running inference.
 
         Parameters:
-        callback (function): The callback function to set, which will be called when "Run Inference" is clicked
+        callback (function): The callback function to set, which will be called when "Run Inference" is clicked.
         """
         self.inference_callback = callback
 
     def check_queue(self):
+        """
+        Periodically checks the update queue for messages and handles the GUI updates.
+        """
         try:
             while not self.update_queue.empty():
                 message, value, log_message = self.update_queue.get_nowait()
@@ -53,7 +58,7 @@ class RibbitRadarGUI:
     @staticmethod
     def create_splash_screen(root):
         """
-        Creates a splash screen window.
+        Creates a splash screen to display while the application is loading.
 
         Parameters:
         root (tk.Tk): The root window of the application.
@@ -77,9 +82,18 @@ class RibbitRadarGUI:
 
     # In gui.py, inside the RibbitRadarGUI class
     def enable_run_button(self):
+        """
+        Enables the 'Run Inference' button, allowing users to run the inference process again.
+        """
         self.run_button.config(state="normal")
 
     def validate_paths(self):
+        """
+        Validates the input and output folder paths and the output file name.
+
+        Returns:
+        bool: True if all paths and file names are valid, otherwise False.
+        """
         # Normalize and trim paths
         input_folder = os.path.normpath(self.input_folder_entry.get().strip())
         output_folder = os.path.normpath(self.output_folder_entry.get().strip())
@@ -149,33 +163,35 @@ class RibbitRadarGUI:
         )
         base_path_button.grid(column=2, row=3, padx=10, pady=10)
 
-         # Define the label choices as strings
-        label_choices = [
-            'RADR, Negative',
-            'RACA, Negative',
-            'RADR, RACA, Negative'
-        ]
+        # Define the label choices as strings
+        label_choices = ["RADR, Negative", "RACA, Negative", "RADR, RACA, Negative"]
 
         # Setup the combobox with these string values
         self.label_choice_var = tk.StringVar()
         self.label_choice_combobox = ttk.Combobox(
-            main_frame, 
-            textvariable=self.label_choice_var, 
-            values=label_choices  # Display the choices as strings
+            main_frame,
+            textvariable=self.label_choice_var,
+            values=label_choices,  # Display the choices as strings
         )
         self.label_choice_combobox.grid(column=1, row=1, padx=10, pady=10)
         self.label_choice_combobox.current(0)  # Default to 'RADR, Negative'
 
         # Prediction Mode Dropdown
-        ttk.Label(main_frame, text="Prediction Mode:").grid(column=0, row=12, padx=10, pady=10)
+        ttk.Label(main_frame, text="Prediction Mode:").grid(
+            column=0, row=12, padx=10, pady=10
+        )
         self.prediction_mode_var = tk.StringVar()
-        prediction_modes = ['Threshold', 'Highest Score']
-        self.prediction_mode_combobox = ttk.Combobox(main_frame, textvariable=self.prediction_mode_var, values=prediction_modes)
+        prediction_modes = ["Threshold", "Highest Score"]
+        self.prediction_mode_combobox = ttk.Combobox(
+            main_frame, textvariable=self.prediction_mode_var, values=prediction_modes
+        )
         self.prediction_mode_combobox.grid(column=1, row=12, padx=10, pady=10)
         self.prediction_mode_combobox.current(0)  # Default to 'Threshold'
 
         # Bind the combobox selection event to toggle the threshold inputs
-        self.prediction_mode_combobox.bind("<<ComboboxSelected>>", self.toggle_threshold_options)
+        self.prediction_mode_combobox.bind(
+            "<<ComboboxSelected>>", self.toggle_threshold_options
+        )
 
         # RADR Threshold
         self.radr_threshold_label = ttk.Label(main_frame, text="RADR Threshold (0-1):")
@@ -322,29 +338,42 @@ class RibbitRadarGUI:
             self.custom_options_frame.grid_remove()  # Hide
 
     def toggle_threshold_options(self, event=None):
-            """
-            Show or hide the threshold options depending on whether 'Threshold' is selected.
-            """
-            if self.prediction_mode_var.get() == 'Threshold':
-                self.radr_threshold_label.grid()  # Show RADR Threshold
-                self.radr_threshold_entry.grid()
-                self.raca_threshold_label.grid()  # Show RACA Threshold
-                self.raca_threshold_entry.grid()
-            else:
-                self.radr_threshold_label.grid_remove()  # Hide RADR Threshold
-                self.radr_threshold_entry.grid_remove()
-                self.raca_threshold_label.grid_remove()  # Hide RACA Threshold
-                self.raca_threshold_entry.grid_remove()
+        """
+        Show or hide the threshold options based on the selected prediction mode.
+        Only shows thresholds if 'Threshold' mode is selected.
+        """
+        if self.prediction_mode_var.get() == "Threshold":
+            self.radr_threshold_label.grid()  # Show RADR Threshold
+            self.radr_threshold_entry.grid()
+            self.raca_threshold_label.grid()  # Show RACA Threshold
+            self.raca_threshold_entry.grid()
+        else:
+            self.radr_threshold_label.grid_remove()  # Hide RADR Threshold
+            self.radr_threshold_entry.grid_remove()
+            self.raca_threshold_label.grid_remove()  # Hide RACA Threshold
+            self.raca_threshold_entry.grid_remove()
 
     def update_log(self, message):
-        """Update the log area with new messages."""
+        """
+        Updates the log area with a new message.
+
+        Parameters:
+        message (str): The message to be displayed in the log area.
+        """
         self.log_area.config(state="normal")  # Enable editing of the text area
         self.log_area.insert(tk.END, message + "\n")  # Append message
         self.log_area.yview(tk.END)  # Auto-scroll to the bottom
         self.log_area.config(state="disabled")  # Disable editing of the text area
 
     def update_progress(self, message=None, value=None, log_message=None):
-        """Update the progress bar and optionally the status label and log message."""
+        """
+        Updates the progress bar and optionally the status label and log.
+
+        Parameters:
+        message (str): The message to display in the status label (optional).
+        value (int or float): The progress bar value (optional).
+        log_message (str): The message to log in the log area (optional).
+        """
         if message is not None:
             self.status_label.config(text=message)
         if value is not None:
@@ -355,10 +384,10 @@ class RibbitRadarGUI:
 
     def select_directory(self, entry_widget):
         """
-        Opens a dialog to select a directory and updates the entry widget with the chosen path.
+        Opens a dialog to select a directory and updates the corresponding entry widget.
 
         Parameters:
-        entry_widget (ttk.Entry): The entry widget to update with the selected directory.
+        entry_widget (ttk.Entry): The entry widget to be updated with the selected directory path.
         """
         selected_directory = filedialog.askdirectory()
         entry_widget.delete(0, tk.END)
@@ -366,7 +395,7 @@ class RibbitRadarGUI:
 
     def run_inference(self):
         """
-        Triggers the inference process using the provided callback in a separate thread.
+        Triggers the inference process in a separate thread after validating paths.
         """
         if not self.validate_paths():
             return  # Stop the process if paths are invalid
