@@ -66,6 +66,7 @@ def run_inference(
     full_report,
     summary_report,
     custom_report,
+    label_choice
 ):
     """
     Runs the complete inference process for detecting Rana Draytonii calls in audio files.
@@ -120,6 +121,7 @@ def run_inference(
             full_report,
             summary_report,
             custom_report,
+            label_choice
         )
 
         messagebox.showinfo(
@@ -230,6 +232,7 @@ def main():
                 "times_heard_radr": app.include_times_heard_radr_var.get(),
                 "times_heard_raca": app.include_times_heard_raca_var.get(),
             },
+            label_choice=app.label_choice_var.get().split(', ')
         )
     )
 

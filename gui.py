@@ -149,6 +149,23 @@ class RibbitRadarGUI:
         )
         base_path_button.grid(column=2, row=3, padx=10, pady=10)
 
+         # Define the label choices as strings
+        label_choices = [
+            'RADR, Negative',
+            'RACA, Negative',
+            'RADR, RACA, Negative'
+        ]
+
+        # Setup the combobox with these string values
+        self.label_choice_var = tk.StringVar()
+        self.label_choice_combobox = ttk.Combobox(
+            main_frame, 
+            textvariable=self.label_choice_var, 
+            values=label_choices  # Display the choices as strings
+        )
+        self.label_choice_combobox.grid(column=1, row=1, padx=10, pady=10)
+        self.label_choice_combobox.current(0)  # Default to 'RADR, Negative'
+
         # RADR Threshold
         ttk.Label(main_frame, text="RADR Threshold (0-1):").grid(
             column=0, row=11, padx=10, pady=10
