@@ -44,9 +44,9 @@ def make_features_fixed(wav_name):
 
 
 # Function to initialize and load the model
-def initialize_model(checkpoint_path):
+def initialize_model(checkpoint_path, label_dim):
     model = ASTModel(
-        label_dim=3,
+        label_dim=label_dim, 
         fstride=10,
         tstride=10,
         input_fdim=128,
@@ -68,6 +68,7 @@ def make_predictions(
     progress_callback,
     radr_threshold,
     raca_threshold,
+    label_choice,
 ):
     logging.debug("Starting make_predictions function")
     file_predictions = defaultdict(list)
@@ -110,17 +111,29 @@ def make_predictions(
 
             base_file_name, _ = os.path.splitext(file_name.split("_segment")[0])
 
-            # Extract scores
-            radr_score = file_result[0]
-            raca_score = file_result[1]
-            negative_score = file_result[2]
+            # Adjust prediction logic based on the number of labels
+            if len(label_choice) == 2:  # Handle RADR/Negative or RACA/Negative
+                if "RADR" in label_choice:
+                    positive_score = file_result[0]  # RADR score
+                    negative_score = file_result[1]  # Negative score
+                    prediction = "RADR" if positive_score >= radr_threshold else "Negative"
+                elif "RACA" in label_choice:
+                    positive_score = file_result[0]  # RACA score
+                    negative_score = file_result[1]  # Negative score
+                    prediction = "RACA" if positive_score >= raca_threshold else "Negative"
+            else:  # Handle the three-label system (RADR, RACA, Negative)
+                radr_score = file_result[0]
+                raca_score = file_result[1]
+                negative_score = file_result[2]
 
-            # Determine prediction
-            prediction = determine_prediction(
-                (radr_score, raca_score, negative_score), radr_threshold, raca_threshold
-            )
+                # Determine the prediction based on both thresholds
+                prediction = determine_prediction(
+                    (radr_score, raca_score, negative_score), radr_threshold, raca_threshold
+                )
+
+            # Store the prediction for the file
             file_predictions[base_file_name].append(
-                (prediction, radr_score, raca_score, negative_score)
+                (prediction, *file_result)
             )
 
         total_processed_files += len(batch)
@@ -171,7 +184,7 @@ def determine_prediction(scores, radr_threshold, raca_threshold):
     return ", ".join(predictions)
 
 
-def aggregate_results(file_predictions, metadata_dict, progress_callback):
+def aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice):
     progress_callback(
         "Inference Step 3/3: aggregating results...",
         95,
@@ -181,27 +194,38 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback):
     results = []  # List to store both the summary and detailed segment information
 
     for base_file_name, predictions in file_predictions.items():
-        # Extract predictions and scores for each segment
-        heard_segments_radr = [
-            i
-            for i, (pred, radr_score, _, _) in enumerate(predictions)
-            if "RADR" in pred
-        ]
-        heard_segments_raca = [
-            i
-            for i, (pred, _, raca_score, _) in enumerate(predictions)
-            if "RACA" in pred
-        ]
+         # Handle 2-label or 3-label cases dynamically
+        num_labels = len(predictions[0]) - 1  # Exclude the prediction text itself
+        heard_segments_radr = []
+        heard_segments_raca = []
 
-        # Scores for aggregating
-        radr_scores = [score for _, score, _, _ in predictions]
-        raca_scores = [score for _, _, score, _ in predictions]
-        negative_scores = [score for _, _, _, score in predictions]
+        if num_labels == 2:
+            if "RADR" in predictions[0][0]:
+                heard_segments_radr = [
+                    i for i, (pred, radr_score, negative_score) in enumerate(predictions)
+                    if "RADR" in pred
+                ]
+            elif "RACA" in predictions[0][0]:
+                heard_segments_raca = [
+                    i for i, (pred, raca_score, negative_score) in enumerate(predictions)
+                    if "RACA" in pred
+                ]
+            radr_scores = [score for _, score, _ in predictions]
+            raca_scores = []  # No RACA scores in this case
+            negative_scores = [score for _, _, score in predictions]
 
-        # Compute average scores
-        avg_radr_score = sum(radr_scores) / len(radr_scores)
-        avg_raca_score = sum(raca_scores) / len(raca_scores)
-        avg_negative_score = sum(negative_scores) / len(negative_scores)
+        elif num_labels == 3:  # Handle the three-label system (RADR, RACA, Negative)
+            heard_segments_radr = [
+                i for i, (pred, radr_score, _, _) in enumerate(predictions)
+                if "RADR" in pred
+            ]
+            heard_segments_raca = [
+                i for i, (pred, _, raca_score, _) in enumerate(predictions)
+                if "RACA" in pred
+            ]
+            radr_scores = [score for _, score, _, _ in predictions]
+            raca_scores = [score for _, _, score, _ in predictions]
+            negative_scores = [score for _, _, _, score in predictions]
 
         # Determine the prediction for the whole file based on heard segments
         if heard_segments_radr and heard_segments_raca:
@@ -253,30 +277,38 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback):
         # Append the detailed information for each segment
         for idx, (
             segment_prediction,
-            radr_score,
-            raca_score,
-            negative_score,
+            *scores  # Variable length to handle both 2-label and 3-label cases
         ) in enumerate(predictions):
             segment_start = idx * 10
             segment_end = (idx + 1) * 10
             segment_range = f"{segment_start}-{segment_end}"
 
-            # Append segment-level information
-            results.append(
-                {
-                    "File Name": f"{base_file_name} (Segment {segment_range})",
-                    "Prediction": segment_prediction,
-                    "RADR Score": radr_score,
-                    "RACA Score": raca_score,
-                    "Negative Score": negative_score,
-                    "Times Heard RACA": "N/A",
-                    "Times Heard RADR": "N/A",
-                    "Device ID": "^",
-                    "Timestamp": "^",
-                    "Temperature": "^",
-                    "Segment": segment_range,  # Segment range for detailed info
-                }
-            )
+            # Handle segment-level information based on the number of labels
+            segment_info = {
+                "File Name": f"{base_file_name} (Segment {segment_range})",
+                "Prediction": segment_prediction,
+                "Times Heard RACA": "N/A",
+                "Times Heard RADR": "N/A",
+                "Device ID": "^",
+                "Timestamp": "^",
+                "Temperature": "^",
+                "Segment": segment_range,  # Segment range for detailed info
+            }
+
+            if num_labels == 2:
+                # For 2-label, add RADR or RACA with Negative
+                if "RADR" in label_choice:
+                    segment_info["RADR Score"] = scores[0]
+                elif "RACA" in label_choice:
+                    segment_info["RACA Score"] = scores[0]
+                segment_info["Negative Score"] = scores[1]
+            elif num_labels == 3:
+                # For 3-label, add RADR, RACA, and Negative
+                segment_info["RADR Score"] = scores[0]
+                segment_info["RACA Score"] = scores[1]
+                segment_info["Negative Score"] = scores[2]
+
+            results.append(segment_info)
 
     # Convert the results list into a DataFrame
     results_df = pd.DataFrame(results)
@@ -487,6 +519,7 @@ def run_inference(
     full_report,
     summary_report,
     custom_report,
+    label_choice
 ):
     """
     Runs the inference process on preprocessed audio files to detect Rana Draytonii calls.
@@ -526,7 +559,10 @@ def run_inference(
         "Inference Step 1/3: Initializing model...",
     )
 
-    audio_model = initialize_model(checkpoint_path)
+    # Dynamically adjust the number of labels
+    label_dim = len(label_choice)
+
+    audio_model = initialize_model(checkpoint_path, label_dim)
 
     audio_files_dataset = DataSet.RanaDraytoniiDataset(
         resampled_audio_dir, transform=make_features_fixed
@@ -542,10 +578,11 @@ def run_inference(
         progress_callback,
         radr_threshold,
         raca_threshold,
+        label_choice
     )
     metadata_dict = {md["filename"]: md for md in metadata_dict.values()}
     logging.info(f"Aggregating Results...")
-    results_df = aggregate_results(file_predictions, metadata_dict, progress_callback)
+    results_df = aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice)
 
     results_path = os.path.join(output_dir, output_file)
     logging.debug(f"Results path: {results_path}")
