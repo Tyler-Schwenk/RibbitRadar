@@ -166,18 +166,27 @@ class RibbitRadarGUI:
         self.label_choice_combobox.grid(column=1, row=1, padx=10, pady=10)
         self.label_choice_combobox.current(0)  # Default to 'RADR, Negative'
 
+        # Prediction Mode Dropdown
+        ttk.Label(main_frame, text="Prediction Mode:").grid(column=0, row=12, padx=10, pady=10)
+        self.prediction_mode_var = tk.StringVar()
+        prediction_modes = ['Threshold', 'Highest Score']
+        self.prediction_mode_combobox = ttk.Combobox(main_frame, textvariable=self.prediction_mode_var, values=prediction_modes)
+        self.prediction_mode_combobox.grid(column=1, row=12, padx=10, pady=10)
+        self.prediction_mode_combobox.current(0)  # Default to 'Threshold'
+
+        # Bind the combobox selection event to toggle the threshold inputs
+        self.prediction_mode_combobox.bind("<<ComboboxSelected>>", self.toggle_threshold_options)
+
         # RADR Threshold
-        ttk.Label(main_frame, text="RADR Threshold (0-1):").grid(
-            column=0, row=11, padx=10, pady=10
-        )
+        self.radr_threshold_label = ttk.Label(main_frame, text="RADR Threshold (0-1):")
+        self.radr_threshold_label.grid(column=0, row=11, padx=10, pady=10)
         self.radr_threshold_entry = ttk.Entry(main_frame)
         self.radr_threshold_entry.grid(column=1, row=11, padx=10, pady=10)
         self.radr_threshold_entry.insert(0, "0.90")  # Default value
 
         # RACA Threshold
-        ttk.Label(main_frame, text="RACA Threshold (0-1):").grid(
-            column=0, row=10, padx=10, pady=10
-        )
+        self.raca_threshold_label = ttk.Label(main_frame, text="RACA Threshold (0-1):")
+        self.raca_threshold_label.grid(column=0, row=10, padx=10, pady=10)
         self.raca_threshold_entry = ttk.Entry(main_frame)
         self.raca_threshold_entry.grid(column=1, row=10, padx=10, pady=10)
         self.raca_threshold_entry.insert(0, "0.85")  # Default value
@@ -311,6 +320,21 @@ class RibbitRadarGUI:
             self.custom_options_frame.grid()  # Show
         else:
             self.custom_options_frame.grid_remove()  # Hide
+
+    def toggle_threshold_options(self, event=None):
+            """
+            Show or hide the threshold options depending on whether 'Threshold' is selected.
+            """
+            if self.prediction_mode_var.get() == 'Threshold':
+                self.radr_threshold_label.grid()  # Show RADR Threshold
+                self.radr_threshold_entry.grid()
+                self.raca_threshold_label.grid()  # Show RACA Threshold
+                self.raca_threshold_entry.grid()
+            else:
+                self.radr_threshold_label.grid_remove()  # Hide RADR Threshold
+                self.radr_threshold_entry.grid_remove()
+                self.raca_threshold_label.grid_remove()  # Hide RACA Threshold
+                self.raca_threshold_entry.grid_remove()
 
     def update_log(self, message):
         """Update the log area with new messages."""

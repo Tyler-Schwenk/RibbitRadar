@@ -69,6 +69,7 @@ def make_predictions(
     radr_threshold,
     raca_threshold,
     label_choice,
+    prediction_mode
 ):
     logging.debug("Starting make_predictions function")
     file_predictions = defaultdict(list)
@@ -128,7 +129,7 @@ def make_predictions(
 
                 # Determine the prediction based on both thresholds
                 prediction = determine_prediction(
-                    (radr_score, raca_score, negative_score), radr_threshold, raca_threshold
+                    (radr_score, raca_score, negative_score), radr_threshold, raca_threshold, prediction_mode
                 )
 
             # Store the prediction for the file
@@ -159,7 +160,7 @@ def group_consecutive_elements(data):
     return ranges
 
 
-def determine_prediction(scores, radr_threshold, raca_threshold):
+def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode):
     """
     Determines the prediction based on the scores for RADR and RACA.
 
@@ -173,15 +174,26 @@ def determine_prediction(scores, radr_threshold, raca_threshold):
     """
     radr_score, raca_score, negative_score = scores
 
-    predictions = []
-    if radr_score >= radr_threshold:
-        predictions.append("RADR")
-    if raca_score >= raca_threshold:
-        predictions.append("RACA")
-    if not predictions:
-        predictions.append("Negative")
+    if prediction_mode == 'Highest Score':
+        # Select the label with the highest score
+        max_score = max(radr_score, raca_score, negative_score)
+        if max_score == radr_score:
+            return "RADR"
+        elif max_score == raca_score:
+            return "RACA"
+        else:
+            return "Negative"
 
-    return ", ".join(predictions)
+    elif prediction_mode == 'Threshold':
+        predictions = []
+        if radr_score >= radr_threshold:
+            predictions.append("RADR")
+        if raca_score >= raca_threshold:
+            predictions.append("RACA")
+        if not predictions:
+            predictions.append("Negative")
+
+        return ", ".join(predictions)
 
 
 def aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice):
@@ -519,7 +531,8 @@ def run_inference(
     full_report,
     summary_report,
     custom_report,
-    label_choice
+    label_choice,
+    prediction_mode
 ):
     """
     Runs the inference process on preprocessed audio files to detect Rana Draytonii calls.
@@ -578,7 +591,8 @@ def run_inference(
         progress_callback,
         radr_threshold,
         raca_threshold,
-        label_choice
+        label_choice,
+        prediction_mode
     )
     metadata_dict = {md["filename"]: md for md in metadata_dict.values()}
     logging.info(f"Aggregating Results...")
