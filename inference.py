@@ -414,6 +414,8 @@ def save_results(
     full_report,
     summary_report,
     custom_report,
+    label_choice,
+    prediction_mode
 ):
     """
     Save the prediction results to an Excel file with optional formatting and conditional formatting.
@@ -461,6 +463,8 @@ def save_results(
                     "Review Date": [datetime.now().strftime("%Y-%m-%d")],
                     "RACA Threshold": [raca_threshold],
                     "RADR Threshold": [radr_threshold],
+                    "Label Choice" : [label_choice],
+                    "Prediction Mode" : [prediction_mode]
                 }
             )
             global_info_df.to_excel(
@@ -736,4 +740,6 @@ def run_inference(
         full_report,
         summary_report,
         custom_report,
+        label_choice,
+        prediction_mode,
     )
