@@ -47,6 +47,7 @@ Before setting up the project, ensure that the following dependencies are instal
 2. pip (Python package manager)
 3. Microsoft Visual C++ Redistributable (required for PyTorch and other packages)
    - Download and install from [Microsoft's official site](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160)
+4. FFmpeg - (add details)
 
 
 ## Running RibbitRadar
