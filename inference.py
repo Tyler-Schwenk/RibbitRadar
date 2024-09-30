@@ -158,32 +158,14 @@ def make_predictions(
 
             base_file_name, _ = os.path.splitext(file_name.split("_segment")[0])
 
-            # Adjust prediction logic based on the number of labels
-            if len(label_choice) == 2:  # Handle RADR/Negative or RACA/Negative
-                if "RADR" in label_choice:
-                    positive_score = file_result[0]  # RADR score
-                    negative_score = file_result[1]  # Negative score
-                    prediction = (
-                        "RADR" if positive_score >= radr_threshold else "Negative"
-                    )
-                elif "RACA" in label_choice:
-                    positive_score = file_result[0]  # RACA score
-                    negative_score = file_result[1]  # Negative score
-                    prediction = (
-                        "RACA" if positive_score >= raca_threshold else "Negative"
-                    )
-            else:  # Handle the three-label system (RADR, RACA, Negative)
-                radr_score = file_result[0]
-                raca_score = file_result[1]
-                negative_score = file_result[2]
-
-                # Determine the prediction based on both thresholds
-                prediction = determine_prediction(
-                    (radr_score, raca_score, negative_score),
-                    radr_threshold,
-                    raca_threshold,
-                    prediction_mode,
-                )
+            # Adjust prediction logic based on label_choice and pass to determine_prediction
+            prediction = determine_prediction(
+                file_result,
+                radr_threshold,
+                raca_threshold,
+                prediction_mode,
+                label_choice
+            )
 
             # Store the prediction for the file
             file_predictions[base_file_name].append((prediction, *file_result))
@@ -220,41 +202,63 @@ def group_consecutive_elements(data):
     return ranges
 
 
-def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode):
+def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode, label_choice):
     """
     Determines the prediction based on the scores for RADR, RACA, and Negative.
 
     Args:
-        scores (tuple): A tuple containing the scores for RADR, RACA, and Negative.
+        scores (tuple): A tuple containing the scores for RADR, RACA, and Negative. If only two labels are present,
+                        set the third score to None.
         radr_threshold (float): The threshold above which a RADR score is considered positive.
         raca_threshold (float): The threshold above which a RACA score is considered positive.
         prediction_mode (str): The mode to use for determining predictions ('Threshold' or 'Highest Score').
+        label_choice (list of str): The labels being used (RADR, RACA, Negative).
 
     Returns:
         str: The prediction based on the scores.
     """
-    radr_score, raca_score, negative_score = scores
+
+    # Initialize all scores to None
+    radr_score = None
+    raca_score = None
+    negative_score = None
+
+    # Adjust prediction logic based on the number of labels
+    if len(label_choice) == 2:  # Handle RADR/Negative or RACA/Negative
+        if "RADR" in label_choice:
+            radr_score = scores[0]  # RADR score
+            negative_score = scores[1]  # Negative score
+        elif "RACA" in label_choice:
+            raca_score = scores[0]  # RACA score
+            negative_score = scores[1]  # Negative score
+    else:  # Handle the three-label system (RADR, RACA, Negative)
+        radr_score = scores[0]
+        raca_score = scores[1]
+        negative_score = scores[2]
 
     if prediction_mode == "Highest Score":
         # Select the label with the highest score
-        max_score = max(radr_score, raca_score, negative_score)
-        if max_score == radr_score:
+        valid_scores = [score for score in (radr_score, raca_score, negative_score) if score is not None]
+        max_score = max(valid_scores)
+        if radr_score is not None and max_score == radr_score:
             return "RADR"
-        elif max_score == raca_score:
+        elif raca_score is not None and max_score == raca_score:
             return "RACA"
         else:
             return "Negative"
 
     elif prediction_mode == "Threshold":
         predictions = []
-        if radr_score >= radr_threshold:
+        if radr_score is not None and radr_score >= radr_threshold:
             predictions.append("RADR")
-        if raca_score >= raca_threshold:
+        if raca_score is not None and raca_score >= raca_threshold:
             predictions.append("RACA")
+        # Only append 'Negative' if no other positive predictions
         if not predictions:
             predictions.append("Negative")
 
         return ", ".join(predictions)
+
 
 
 def aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice):

@@ -34,6 +34,8 @@ def get_ffmpeg_path():
         logging.error("ffprobe path: ", ffprobe_executable)
     else:
         logging.info("FFmpeg binaries found successfully.")
+        logging.info("ffmpeg path: ", ffmpeg_executable)
+        logging.info("ffprobe path: ", ffprobe_executable)
 
     # Set the converter path for pydub
     AudioSegment.converter = ffmpeg_executable
