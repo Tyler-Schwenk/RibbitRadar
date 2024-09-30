@@ -41,6 +41,15 @@ To use RibbitRadar, download the latest release from the [Releases](https://gith
 - macOS or Windows operating system.
 - Audio recordings in WAV format to analyze.
 
+Before setting up the project, ensure that the following dependencies are installed:
+
+1. Python 3.x
+2. pip (Python package manager)
+3. Microsoft Visual C++ Redistributable (required for PyTorch and other packages)
+   - Download and install from [Microsoft's official site](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160)
+4. FFmpeg - (add details)
+
+
 ## Running RibbitRadar
 
 ### macOS
