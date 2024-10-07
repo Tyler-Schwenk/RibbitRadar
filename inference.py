@@ -164,7 +164,7 @@ def make_predictions(
                 radr_threshold,
                 raca_threshold,
                 prediction_mode,
-                label_choice
+                label_choice,
             )
 
             # Store the prediction for the file
@@ -202,7 +202,9 @@ def group_consecutive_elements(data):
     return ranges
 
 
-def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode, label_choice):
+def determine_prediction(
+    scores, radr_threshold, raca_threshold, prediction_mode, label_choice
+):
     """
     Determines the prediction based on the scores for RADR, RACA, and Negative.
 
@@ -238,7 +240,11 @@ def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode
 
     if prediction_mode == "Highest Score":
         # Select the label with the highest score
-        valid_scores = [score for score in (radr_score, raca_score, negative_score) if score is not None]
+        valid_scores = [
+            score
+            for score in (radr_score, raca_score, negative_score)
+            if score is not None
+        ]
         max_score = max(valid_scores)
         if radr_score is not None and max_score == radr_score:
             return "RADR"
@@ -258,7 +264,6 @@ def determine_prediction(scores, radr_threshold, raca_threshold, prediction_mode
             predictions.append("Negative")
 
         return ", ".join(predictions)
-
 
 
 def aggregate_results(file_predictions, metadata_dict, progress_callback, label_choice):
@@ -419,7 +424,7 @@ def save_results(
     summary_report,
     custom_report,
     label_choice,
-    prediction_mode
+    prediction_mode,
 ):
     """
     Save the prediction results to an Excel file with optional formatting and conditional formatting.
@@ -467,8 +472,8 @@ def save_results(
                     "Review Date": [datetime.now().strftime("%Y-%m-%d")],
                     "RACA Threshold": [raca_threshold],
                     "RADR Threshold": [radr_threshold],
-                    "Label Choice" : [label_choice],
-                    "Prediction Mode" : [prediction_mode]
+                    "Label Choice": [label_choice],
+                    "Prediction Mode": [prediction_mode],
                 }
             )
             global_info_df.to_excel(

@@ -13,7 +13,7 @@ logging.basicConfig(
     handlers=[logging.FileHandler(log_file_path, mode="w"), logging.StreamHandler()],
 )
 
-#check_and_install_packages()
+# check_and_install_packages()
 
 import tkinter as tk
 from tkinter import messagebox
