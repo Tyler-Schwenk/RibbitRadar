@@ -34,8 +34,6 @@ def split_all_audio_files(
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    num_files = len(input_dir)
-
     for filename in os.listdir(input_dir):
         if filename.endswith(file_types):
             audio_path = os.path.join(input_dir, filename)

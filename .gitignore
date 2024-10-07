@@ -61,6 +61,10 @@ cython_debug/
 # Other
 .DS_Store
 
+# Specific project directories
+Rana_Draytonii_ML_Model/ResampledAudio/
+Rana_Draytonii_ML_Model/Temp_File_Storage/
+
 # Ignore model weights
 model/*.pth
 

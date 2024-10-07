@@ -66,7 +66,6 @@ def run_inference(
     output_file,
     temp_file_storage,
     resampled_audio_dir,
-    labels_path,
     checkpoint_path,
     model_version,
     update_progress,
@@ -95,7 +94,6 @@ def run_inference(
     output_file (str): Name of the output file.
     temp_file_storage (str): Path to the temporary file storage directory.
     resampled_audio_dir (str): Path to the directory containing resampled audio files.
-    labels_path (str): Path to the labels.csv file.
     checkpoint_path (str): Path to the model weights file.
     model_version (str): Version number of the model.
     update_progress (function): Callback function for updating progress.
@@ -126,7 +124,6 @@ def run_inference(
         output_file = generate_unique_filename(output_dir, output_file)
 
         inference.run_inference(
-            labels_path,
             checkpoint_path,
             resampled_audio_dir,
             model_version,
@@ -142,14 +139,15 @@ def run_inference(
             label_choice,
             prediction_mode,
         )
+        update_progress(
+            "Inference completed.", 100, "Inference completed successfully."
+        )
 
         messagebox.showinfo(
             "Success",
             f"Inference completed successfully. View your results at {output_dir}",
         )
-        update_progress(
-            "Inference completed.", 100, "Inference completed successfully."
-        )
+        
 
     except Exception as e:
         update_progress(None, None, f"Error: {str(e)}")
@@ -220,9 +218,6 @@ def main():
     temp_file_storage = os.path.normpath(
         os.path.join(base_path, "Rana_Draytonii_ML_Model", "Temp_File_Storage")
     )
-    labels_path = os.path.normpath(
-        os.path.join(base_path, "Rana_Draytonii_ML_Model", "labels.csv")
-    )
 
     # Now that initial setup is done, destroy the splash screen
     splash.destroy()
@@ -237,7 +232,6 @@ def main():
             os.path.normpath(app.output_file_entry.get()),
             temp_file_storage,
             Resampled_audio_path,
-            labels_path,
             model_path,
             model_version,
             update_progress=lambda message=None, value=None, log_message=None: app.update_queue.put(

@@ -657,7 +657,6 @@ def save_results(
 
 
 def run_inference(
-    labels_path,
     checkpoint_path,
     resampled_audio_dir,
     model_version,
@@ -677,7 +676,6 @@ def run_inference(
     Runs the full inference process to predict frog calls in audio files and generates a report.
 
     Args:
-        labels_path (str): Path to the labels CSV.
         checkpoint_path (str): Path to the model checkpoint file.
         resampled_audio_dir (str): Directory containing resampled audio files.
         model_version (str): The version of the model being used.

@@ -26,7 +26,7 @@ class RibbitRadarGUI:
         """
         self.root = root
         self.resampled_audio_path = resampled_audio_path
-        self.inference_callback = None  # Initialize as None
+        self.inference_callback = None
         self.create_widgets()
         self.update_queue = queue.Queue()
         self.check_queue()
