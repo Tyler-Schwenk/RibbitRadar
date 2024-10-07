@@ -7,6 +7,10 @@
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/pulls"><img alt="Pull requests Badge" src="https://img.shields.io/github/issues-pr/Tyler-Schwenk/RibbitRadar"></a>
 </p>
 
+
+# This README is out of date. Will be updated by 10/17
+
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Project Structure](#project-structure)
