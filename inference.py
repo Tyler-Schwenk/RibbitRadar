@@ -1,13 +1,13 @@
 from src.models import ASTModel
 from datetime import datetime
 from collections import defaultdict
-import DataSet
+import dataset
 import itertools
 import torch, torchaudio, timm
 import numpy
 import pandas as pd
 import os
-
+import audio_preprocessing
 import logging
 
 
@@ -658,6 +658,7 @@ def save_results(
 
 def run_inference(
     checkpoint_path,
+    temp_file_storage,
     resampled_audio_dir,
     model_version,
     output_dir,
@@ -677,6 +678,7 @@ def run_inference(
 
     Args:
         checkpoint_path (str): Path to the model checkpoint file.
+        temp_file_storage (str): Directory containing temporary audio files.
         resampled_audio_dir (str): Directory containing resampled audio files.
         model_version (str): The version of the model being used.
         output_dir (str): Directory to save the output results.
@@ -713,10 +715,10 @@ def run_inference(
 
     audio_model = initialize_model(checkpoint_path, label_dim)
 
-    audio_files_dataset = DataSet.RanaDraytoniiDataset(
+    audio_files_dataset = dataset.RanaDraytoniiDataset(
         resampled_audio_dir, transform=make_features_fixed
     )
-    data_loader = DataSet.get_data_loader(
+    data_loader = dataset.get_data_loader(
         resampled_audio_dir, batch_size=32, shuffle=False
     )
 
@@ -750,3 +752,6 @@ def run_inference(
         label_choice,
         prediction_mode,
     )
+
+    audio_preprocessing.clear_directory(temp_file_storage)
+    audio_preprocessing.clear_directory(resampled_audio_dir)

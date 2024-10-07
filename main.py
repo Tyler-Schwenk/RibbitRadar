@@ -1,5 +1,5 @@
 # main.py
-from PackageInstaller import check_and_install_packages
+from package_installer import check_and_install_packages
 import os
 import logging
 
@@ -18,10 +18,10 @@ logging.basicConfig(
 import tkinter as tk
 from tkinter import messagebox
 from gui import RibbitRadarGUI
-import GetFFMPEG
-import AudioPreprocessing
+import get_ffmpeg
+import audio_preprocessing
 import sys
-from ModelManager import (
+from model_manager import (
     update_local_model,
     get_highest_local_model_version,
     get_latest_local_model_file,
@@ -79,7 +79,7 @@ def run_inference(
     prediction_mode,
 ):
     """
-    Runs the complete inference process for detecting Rana Draytonii calls in audio files.
+    Runs the complete inference process for detecting Frog calls in audio files.
 
     This function performs the following steps:
     1. Extracts metadata from the input audio files.
@@ -113,10 +113,10 @@ def run_inference(
         import inference
 
         update_progress("Inference started", 0, "Inference Started.")
-        metadata_dict = AudioPreprocessing.extract_metadata_from_files_in_directory(
+        metadata_dict = audio_preprocessing.extract_metadata_from_files_in_directory(
             input_dir, update_progress
         )
-        AudioPreprocessing.Preprocess_audio(
+        audio_preprocessing.preprocess_audio(
             input_dir, temp_file_storage, resampled_audio_dir, update_progress
         )
 
@@ -125,6 +125,7 @@ def run_inference(
 
         inference.run_inference(
             checkpoint_path,
+            temp_file_storage,
             resampled_audio_dir,
             model_version,
             output_dir,
@@ -193,7 +194,7 @@ def main():
         splash.update_idletasks()
 
     # Setup FFmpeg environment
-    ffmpeg_executable, _ = GetFFMPEG.get_ffmpeg_path()
+    ffmpeg_executable, _ = get_ffmpeg.get_ffmpeg_path()
     os.environ["PATH"] += os.pathsep + os.path.dirname(ffmpeg_executable)
     os.environ["FFMPEG_BINARY"] = ffmpeg_executable
 
@@ -212,12 +213,13 @@ def main():
     base_path = os.path.dirname(os.path.abspath(__file__))
 
     # Define paths for audio processing
-    Resampled_audio_path = os.path.normpath(
-        os.path.join(base_path, "Rana_Draytonii_ML_Model", "ResampledAudio")
-    )
     temp_file_storage = os.path.normpath(
-        os.path.join(base_path, "Rana_Draytonii_ML_Model", "Temp_File_Storage")
+        os.path.join(base_path, "processing", "temp_file_storage")
     )
+    Resampled_audio_path = os.path.normpath(
+        os.path.join(base_path, "processing", "resampled_audio")
+    )
+
 
     # Now that initial setup is done, destroy the splash screen
     splash.destroy()
