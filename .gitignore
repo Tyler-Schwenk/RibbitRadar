@@ -65,7 +65,7 @@ cython_debug/
 processing/
 
 # Ignore model weights
-model/*.pth
+src/models/*.pth
 
 
 # Ignore ffmpeg folder
