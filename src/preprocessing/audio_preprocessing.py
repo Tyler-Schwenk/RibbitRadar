@@ -3,7 +3,7 @@ import math
 import os
 import re
 import shutil
-import get_ffmpeg
+import utilities.get_ffmpeg as get_ffmpeg
 from tkinter import messagebox
 from pydub import AudioSegment
 from pydub.utils import mediainfo

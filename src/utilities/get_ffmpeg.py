@@ -14,10 +14,9 @@ def get_ffmpeg_path():
         f"Operating System: {os.name}, Python Version: {sys.version}, _MEIPASS: {getattr(sys, '_MEIPASS', 'Not set')}"
     )
 
-    # Get the directory of the current script
-    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-    # Define the path to the ffmpeg executable inside the bin folder
-    ffmpeg_bin_dir = os.path.join(base_path, "ffmpeg", "bin")
+    # Adjust the ffmpeg path to point to the main RibbitRadar folder
+    ribbitradar_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    ffmpeg_bin_dir = os.path.join(ribbitradar_root, 'ffmpeg', 'bin')
 
     # Choose the correct executable based on the operating system
     if os.name == "nt":  # Windows
@@ -30,12 +29,12 @@ def get_ffmpeg_path():
     # Verify that the FFmpeg binaries exist
     if not os.path.isfile(ffmpeg_executable) or not os.path.isfile(ffprobe_executable):
         logging.error("FFmpeg binaries not found at expected locations:")
-        logging.error("ffmpeg path: ", ffmpeg_executable)
-        logging.error("ffprobe path: ", ffprobe_executable)
+        logging.error(f"ffmpeg path:  {ffmpeg_executable}")
+        logging.error(f"ffprobe path: {ffprobe_executable}")
     else:
         logging.info("FFmpeg binaries found successfully.")
-        logging.info("ffmpeg path: ", ffmpeg_executable)
-        logging.info("ffprobe path: ", ffprobe_executable)
+        logging.error(f"ffmpeg path:  {ffmpeg_executable}")
+        logging.error(f"ffprobe path: {ffprobe_executable}")
 
     # Set the converter path for pydub
     AudioSegment.converter = ffmpeg_executable
