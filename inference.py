@@ -3,8 +3,7 @@ from datetime import datetime
 from collections import defaultdict
 import dataset
 import itertools
-import torch, torchaudio, timm
-import numpy
+import torch, torchaudio
 import pandas as pd
 import os
 import audio_preprocessing
@@ -293,13 +292,16 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback, label_
         heard_segments_radr = []
         heard_segments_raca = []
 
+        # Case using binary search for one frog or negative
         if num_labels == 2:
+            # Case searching for RADR/Negative
             if "RADR" in predictions[0][0]:
                 heard_segments_radr = [
                     i
                     for i, (pred, radr_score, negative_score) in enumerate(predictions)
                     if "RADR" in pred
                 ]
+            # Case searching for RACA/Negative
             elif "RACA" in predictions[0][0]:
                 heard_segments_raca = [
                     i

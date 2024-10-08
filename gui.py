@@ -312,10 +312,8 @@ class RibbitRadarGUI:
         instructions = """
         How to Use RibbitRadar:
         ------------------------
-        1. Select the Input Folder containing your audio files.
-        2. Enter a unique name for the Output File.
-        3. Choose the Output Location to save the results.
-        4. Click 'Run Inference' to start processing.
+        1. This will be updated before release
+        2. Save the Frogs!!
         """
         instruction_text.config(state="normal")
         instruction_text.insert("end", instructions)
