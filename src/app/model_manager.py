@@ -4,7 +4,7 @@ import logging
 from config import paths
 
 
-def extract_model_version(filename):
+def extract_version_from_filename(filename):
     """
     Extract the version number from the model filename.
 
@@ -21,7 +21,7 @@ def extract_model_version(filename):
         return 0  # Default to 0 if the version cannot be extracted
 
 
-def download_metadata(metadata_url, local_metadata_path):
+def download_model_metadata(metadata_url, local_metadata_path):
     """
     Download the metadata file using gdown.
 
@@ -43,7 +43,7 @@ def download_metadata(metadata_url, local_metadata_path):
         return None
 
 
-def parse_metadata(metadata_path):
+def parse_model_metadata(metadata_path):
     """
     Parse the metadata file to extract model version and file_id.
 
@@ -65,7 +65,7 @@ def parse_metadata(metadata_path):
         return None
 
 
-def download_latest_model(
+def download_and_update_model(
     model_url, local_model_dir, new_version, current_version, progress_callback=None
 ):
     """
@@ -133,7 +133,7 @@ def download_latest_model(
         return None
 
 
-def get_highest_local_model_version(local_model_dir):
+def get_latest_local_model_version(local_model_dir):
     """
     Get the highest model version number in the local directory.
 
@@ -147,11 +147,11 @@ def get_highest_local_model_version(local_model_dir):
     model_files = [f for f in files if f.startswith("best_audio_model_V")]
     if not model_files:
         return 0
-    highest_version = max(extract_model_version(f) for f in model_files)
+    highest_version = max(extract_version_from_filename(f) for f in model_files)
     return highest_version
 
 
-def get_latest_local_model_file(model_dir):
+def get_latest_model_file_path(model_dir):
     """
     Get the path to the latest model file in the local directory.
 
@@ -168,7 +168,7 @@ def get_latest_local_model_file(model_dir):
     model_files = [f for f in files if f.startswith("best_audio_model_V")]
     if not model_files:
         raise FileNotFoundError("No model files found in the directory.")
-    latest_model_file = max(model_files, key=lambda x: extract_model_version(x))
+    latest_model_file = max(model_files, key=lambda x: extract_version_from_filename(x))
     return os.path.join(model_dir, latest_model_file)
 
 
@@ -185,22 +185,22 @@ def update_local_model(local_model_dir, progress_callback=None):
     """
     logging.info("Downloading model metadata...")
     local_metadata_path = "model_metadata.txt"
-    metadata_file = download_metadata(paths.METADATA_URL, local_metadata_path)
+    metadata_file = download_model_metadata(paths.METADATA_URL, local_metadata_path)
 
     if metadata_file is None:
         logging.error("Failed to download metadata. Aborting update.")
         return None
 
-    metadata = parse_metadata(metadata_file)
+    metadata = parse_model_metadata(metadata_file)
     if metadata is None:
         logging.error("Failed to parse metadata. Aborting update.")
         return None
 
-    current_version = get_highest_local_model_version(local_model_dir)
+    current_version = get_latest_local_model_version(local_model_dir)
     new_version = int(metadata.get("version", 0))
 
     # Proceed to download the model if a newer version is available
     model_url = f"https://drive.google.com/uc?id={metadata['file_id']}"
-    return download_latest_model(
+    return download_and_update_model(
         model_url, local_model_dir, new_version, current_version, progress_callback
     )
