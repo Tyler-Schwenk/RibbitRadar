@@ -2,6 +2,14 @@ import sys
 import os
 import subprocess
 import logging
+
+# Set the working directory to the project root
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+os.chdir(project_root)
+
+# Add 'src' to the Python path
+sys.path.insert(0, os.path.join(project_root, 'src'))
+
 from src.utilities.util import generate_unique_filename
 from src.utilities.logging_setup import initialize_logging
 from src.utilities.package_installer import check_and_install_packages
@@ -15,13 +23,6 @@ from src.app.model_manager import (
     get_highest_local_model_version,
     get_latest_local_model_file,
 )
-
-# Set the working directory to the project root
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-os.chdir(project_root)
-
-# Add 'src' to the Python path
-sys.path.insert(0, os.path.join(project_root, 'src'))
 
 # Log file setup
 log_file_path = os.path.join(project_root, "ribbitradar.log")
