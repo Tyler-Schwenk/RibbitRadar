@@ -61,12 +61,12 @@ cython_debug/
 # Other
 .DS_Store
 
-# Specific project directories
-processing/
+# Ignore temporary files
+processing/temp_file_storage/
+processing/resampled_audio/
 
 # Ignore model weights
 src/models/*.pth
-
 
 # Ignore ffmpeg folder
 ffmpeg/
