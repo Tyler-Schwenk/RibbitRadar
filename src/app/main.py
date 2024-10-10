@@ -20,8 +20,8 @@ from src.app.gui_manager import initialize_gui
 from src.app.inference_runner import run_inference
 from src.app.model_manager import (
     update_local_model,
-    get_highest_local_model_version,
-    get_latest_local_model_file,
+    get_latest_local_model_version,
+    get_latest_model_file_path,
 )
 
 # Log file setup
@@ -49,10 +49,10 @@ def main():
     update_local_model(LOCAL_MODEL_DIR, update_splash_progress)
 
     # Get the highest local model version
-    model_version = get_highest_local_model_version(LOCAL_MODEL_DIR)
+    model_version = get_latest_local_model_version(LOCAL_MODEL_DIR)
 
     # Determine the latest model file in the local directory
-    model_path = get_latest_local_model_file(LOCAL_MODEL_DIR)
+    model_path = get_latest_model_file_path(LOCAL_MODEL_DIR)
 
     # Now that initial setup is done, destroy the splash screen
     splash.destroy()
