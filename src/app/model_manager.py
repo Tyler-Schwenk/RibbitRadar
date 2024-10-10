@@ -1,6 +1,7 @@
 import os
 import gdown
 import logging
+from config import paths
 
 
 def extract_model_version(filename):
@@ -18,9 +19,6 @@ def extract_model_version(filename):
         return int(version_str)
     except (IndexError, ValueError):
         return 0  # Default to 0 if the version cannot be extracted
-
-
-METADATA_URL = "https://drive.google.com/uc?id=1ry4-tguDnA1rFXFZ65KslO6lE2mL1LQv"
 
 
 def download_metadata(metadata_url, local_metadata_path):
@@ -187,7 +185,7 @@ def update_local_model(local_model_dir, progress_callback=None):
     """
     logging.info("Downloading model metadata...")
     local_metadata_path = "model_metadata.txt"
-    metadata_file = download_metadata(METADATA_URL, local_metadata_path)
+    metadata_file = download_metadata(paths.METADATA_URL, local_metadata_path)
 
     if metadata_file is None:
         logging.error("Failed to download metadata. Aborting update.")

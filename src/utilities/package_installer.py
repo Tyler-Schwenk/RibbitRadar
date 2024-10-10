@@ -14,7 +14,7 @@ def check_and_install_packages(requirements_file="config/requirements.txt"):
 
             # Relaunch the script with the --restart flag
             logging.info("Restarting application to apply newly installed dependencies...")
-            os.execv(sys.executable, [sys.executable, *sys.argv, "--restart"])
+            subprocess.run([sys.executable, *sys.argv, "--restart"], check=True)
 
         else:
             logging.error("Requirements file not found at %s", requirements_file)

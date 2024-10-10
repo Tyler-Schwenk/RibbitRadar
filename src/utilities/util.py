@@ -4,6 +4,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import random
+import os
+import logging
 from collections import namedtuple
 
 
@@ -348,6 +350,23 @@ def load_progress(prog_pkl, quiet=False):
 
 def count_parameters(model):
     return sum([p.numel() for p in model.parameters() if p.requires_grad])
+
+def generate_unique_filename(filename):
+    base, extension = os.path.splitext(filename)
+    if not extension:
+        extension = ".xlsx"  # Default to .xlsx if no extension is provided
+    counter = 1
+    unique_filename = f"{base}{extension}"
+
+    # Check only the filename part, assuming the directory is handled separately
+    while os.path.exists(unique_filename):
+        unique_filename = f"{base}({counter}){extension}"
+        logging.debug(f"File exists. Trying new name: {unique_filename}")
+        counter += 1
+
+    logging.info(f"Final unique filename: {unique_filename}")
+    return unique_filename
+
 
 
 PrenetConfig = namedtuple(

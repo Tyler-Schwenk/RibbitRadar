@@ -1,12 +1,12 @@
 from src.models import ASTModel
 from datetime import datetime
 from collections import defaultdict
-import preprocessing.dataset as dataset
+import src.preprocessing.dataset as dataset
 import itertools
 import torch, torchaudio
 import pandas as pd
 import os
-import preprocessing.audio_preprocessing as audio_preprocessing
+import src.preprocessing.audio_preprocessing as audio_preprocessing
 import logging
 
 
