@@ -17,7 +17,7 @@ from config.paths import MODEL_URL, LOCAL_MODEL_DIR
 from src.utilities.setup_ffmpeg import setup_ffmpeg
 from src.preprocessing.preprocessing_manager import preprocess_audio_pipeline
 from src.app.gui_manager import initialize_gui
-from src.app.inference_runner import run_inference
+from src.inference.inference_runner import run_inference
 from src.app.model_manager import (
     update_local_model,
     get_latest_local_model_version,

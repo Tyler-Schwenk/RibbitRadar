@@ -1,4 +1,6 @@
-from .inference import run_inference as inference_logic
+# src/inference/inference_runner.py
+
+from .inference_logic import run_inference_logic
 from config import paths
 import os
 
@@ -10,7 +12,7 @@ def run_inference( model_path, model_version, output_dir,
     """
     Delegates the inference logic to the core inference script while handling progress updates for the GUI.
     """
-    inference_logic(
+    run_inference_logic(
         checkpoint_path=model_path,  # Path to model checkpoint
         temp_file_storage=paths.TEMP_FILE_STORAGE,  # Temporary storage path
         resampled_audio_dir=paths.RESAMPLED_AUDIO_PATH,  # Directory for resampled audio
