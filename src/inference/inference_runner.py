@@ -1,8 +1,6 @@
 # src/inference/inference_runner.py
-
 from .inference_logic import run_inference_logic
 from config import paths
-import os
 
 def run_inference( model_path, model_version, output_dir,
     metadata_dict, update_progress, radr_threshold, raca_threshold,

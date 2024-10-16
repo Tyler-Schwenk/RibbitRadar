@@ -1,7 +1,6 @@
 import numpy as np
 from scipy import stats
 from sklearn import metrics
-import torch
 
 
 def d_prime(auc):

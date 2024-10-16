@@ -1,6 +1,5 @@
 # src/inference/inference_logic.py
 import logging
-import os
 from src.inference.model_utils import initialize_and_load_model
 from src.inference.prediction_utils import perform_inference
 from src.inference.result_processing import save_inference_results

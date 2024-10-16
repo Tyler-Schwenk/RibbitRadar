@@ -1,6 +1,5 @@
 import sys
 import os
-import subprocess
 import logging
 
 # Set the working directory to the project root
@@ -13,7 +12,7 @@ sys.path.insert(0, os.path.join(project_root, 'src'))
 from src.utilities.util import generate_unique_filename
 from src.utilities.logging_setup import initialize_logging
 from src.utilities.package_installer import check_and_install_packages
-from config.paths import MODEL_URL, LOCAL_MODEL_DIR
+from config.paths import LOCAL_MODEL_DIR
 from src.utilities.setup_ffmpeg import setup_ffmpeg
 from src.preprocessing.preprocessing_manager import preprocess_audio_pipeline
 from src.app.gui_manager import initialize_gui
