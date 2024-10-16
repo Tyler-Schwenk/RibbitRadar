@@ -14,9 +14,6 @@ RESAMPLED_AUDIO_PATH = os.path.join(project_root, "processing", "resampled_audio
 REQUIREMENTS_FILE = os.path.join(CONFIG_DIR, "requirements.txt")
 LOCAL_MODEL_METADATA_FILE = os.path.join(CONFIG_DIR, "model_metadata.txt")
 
-# Google Drive folder ID and local paths for model management
-MODEL_URL = "https://drive.google.com/uc?id=1lKOiBk1zrelbnQKHN8y0FzPy35cfM2Rz" #is this useless? depreciateD??
-
 METADATA_URL = "https://drive.google.com/uc?id=1ry4-tguDnA1rFXFZ65KslO6lE2mL1LQv"
 
 # Utility function to create directories if they don't exist
