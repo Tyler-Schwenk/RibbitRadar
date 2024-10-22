@@ -161,6 +161,45 @@ def resampler(audio_path, save_dir):
 
     return new_path
 
+def resample_audio_files(input_dir, output_dir, progress_callback):
+    """
+    Resamples all audio files in the input directory and saves them to the output directory.
+
+    Parameters:
+    input_dir (str): The directory containing the original audio files.
+    output_dir (str): The directory where resampled audio files will be saved.
+    progress_callback (function): A callback function for updating the progress of the resampling.
+
+    Returns:
+    None
+    """
+    try:
+        audio_files = [
+            f for f in os.listdir(input_dir) if f.endswith((".wav", ".WAV"))
+        ]
+        total_files = len(audio_files)
+
+        # Make sure the output directory exists
+        os.makedirs(output_dir, exist_ok=True)
+
+        for i, filename in enumerate(audio_files, start=1):
+            filepath = os.path.join(input_dir, filename)
+            filepath = os.path.normpath(filepath)
+            resampler(filepath, output_dir)
+
+            # Update progress based on number of files processed
+            progress_percentage = (i / total_files) * 100
+            progress_callback(
+                f"Resampling audio files... ({i}/{total_files})", progress_percentage
+            )
+
+    except Exception as e:
+        messagebox.showerror(
+            "Error", f"An error occurred while resampling audio files: {str(e)}"
+        )
+        progress_callback(
+            log_message=f"An error occurred while resampling audio files: {str(e)}"
+        )
 
 # Function to convert strero files to mono
 def stereo_to_mono(directory_path):
@@ -195,93 +234,3 @@ def stereo_to_mono(directory_path):
                 mono_audio.export(file_path, format="wav")
 
 
-def preprocess_audio(
-    input_dir, temp_file_storage, resampled_audio_dir, progress_callback
-):
-    """
-    Preprocesses audio files from input_dir, through temp_file_storage, and into resampled_audio_dir.
-
-    This function performs several preprocessing steps on audio files:
-    - Splits audio files into smaller segments.
-    - Clears the output directory.
-    - Resamples audio files to a specified sample rate.
-    - Converts stereo audio files to mono.
-
-    Parameters:
-    input_dir (str): The directory containing the original audio files to be processed.
-    temp_file_storage (str): The directory where the processed audio segments will be saved.
-    resampled_audio_dir (str): The directory where resampled audio files will be saved.
-    progress_callback (function): A callback function for updating the progress of the preprocessing. This function should accept two parameters: a message (str) and an optional progress value (float or int).
-
-    Returns:
-    None
-    """
-    try:
-
-        # Make sure temp_file_storage exists
-        if not os.path.exists(temp_file_storage):
-            os.makedirs(temp_file_storage)
-
-        # Clears the output directory
-        progress_callback(
-            "Preprocessing Step 1/5: Clearing temp_file_storage...",
-            5,
-            "Preprocessing Step 1/5: Clearing temp_file_storage...",
-        )
-        clear_directory(temp_file_storage)
-
-        # Splits and processes the audio files
-        progress_callback(
-            "Preprocessing Step 2/5: Splitting audio files...",
-            10,
-            "Preprocessing Step 2/5: Splitting audio files...",
-        )
-        split_all_audio_files(input_dir, temp_file_storage, progress_callback)
-
-        # Clear the ResampledAudio directory and resample the split audio files
-        if not os.path.exists(resampled_audio_dir):
-            os.makedirs(resampled_audio_dir)
-
-        clear_directory(resampled_audio_dir)
-        progress_callback(
-            "Preprocessing Step 3/5: Clearing Resampled Audio...",
-            15,
-            "Preprocessing Step 3/5: Clearing Resampled Audio...",
-        )
-
-        # Convert to mono and resample the audio files
-        progress_callback(
-            "Preprocessing Step 4/5: Converting files to mono...",
-            20,
-            "Preprocessing Step 4/5: Converting files to mono...",
-        )
-        stereo_to_mono(temp_file_storage)
-
-        audio_files = [
-            f
-            for f in os.listdir(temp_file_storage)
-            if f.endswith(".wav") or f.endswith(".WAV")
-        ]
-        file_count = len(audio_files)
-        progress_callback(
-            log_message=f"Preprocessing Step 5/5: Resampling audio files..."
-        )
-        for i, filename in enumerate(audio_files, start=1):
-            filepath = os.path.join(temp_file_storage, filename)
-            filepath = os.path.normpath(filepath)
-            resampler(filepath, resampled_audio_dir)
-            # Update progress based on number of files processed
-            progress_percentage = 20 + (i / file_count) * 50
-            progress_callback(
-                f"Preprocessing Step 5/5: Resampling audio files...",
-                progress_percentage,
-            )
-
-        progress_callback("Finished Preprocessing", 100, "Finished Preprocessing")
-    except Exception as e:
-        messagebox.showerror(
-            "Error", f"An error occurred while preprocessing audio: {str(e)}"
-        )
-        progress_callback(
-            log_message=f"An error occurred while preprocessing audio: {str(e)}"
-        )
