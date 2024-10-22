@@ -24,7 +24,7 @@ def initialize_model(checkpoint_path, label_dim):
         audioset_pretrain=False,
         model_size="base384",
     )
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
     audio_model = torch.nn.DataParallel(model, device_ids=[0])
     audio_model.load_state_dict(checkpoint)
     return audio_model.to(torch.device("cpu")).eval()
