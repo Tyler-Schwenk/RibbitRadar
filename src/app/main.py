@@ -14,9 +14,8 @@ from src.utilities.logging_setup import initialize_logging
 from src.utilities.package_installer import check_and_install_packages
 from config.paths import LOCAL_MODEL_DIR, REQUIREMENTS_FILE
 from src.utilities.setup_ffmpeg import setup_ffmpeg
-from src.preprocessing.preprocessing_manager import preprocess_audio_pipeline
 from src.app.gui_manager import initialize_gui
-from src.inference.inference_runner import run_inference
+from src.inference.inference_pipeline import start_inference_pipeline
 from src.app.model_manager import (
     update_local_model,
     get_latest_local_model_version,
@@ -58,15 +57,12 @@ def main():
 
     # Set the inference callback for when the user hits 'Run'
     app.set_inference_callback(
-        lambda: run_inference(
+        lambda: start_inference_pipeline(
             model_path=model_path,
             model_version=model_version,
-            output_dir = app.output_folder_entry.get(),
+            output_dir=app.output_folder_entry.get(),
             output_file=generate_unique_filename(app.output_file_entry.get()),
-            metadata_dict=preprocess_audio_pipeline(
-                app.input_folder_entry.get(),
-                app.update_progress
-            ),
+            input_dir=app.input_folder_entry.get(),
             update_progress=app.update_progress,
             radr_threshold=float(app.radr_threshold_entry.get()), 
             raca_threshold=float(app.raca_threshold_entry.get()),  
