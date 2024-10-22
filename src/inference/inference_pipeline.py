@@ -12,13 +12,13 @@ def start_inference_pipeline(
     Manages the complete inference pipeline, including preprocessing, metadata extraction, and inference.
     """
     try:
-        # Step 1: Preprocessing
-        update_progress("Starting preprocessing...")
-        preprocess_audio_pipeline(input_dir, update_progress)
-
-        # Step 2: Metadata Extraction
+        # Step 1: Metadata Extraction
         update_progress("Extracting metadata...")
         metadata_dict = extract_metadata_from_audiomoth_files(input_dir, update_progress)
+        
+        # Step 2: Preprocessing
+        update_progress("Starting preprocessing...")
+        preprocess_audio_pipeline(input_dir, update_progress)
 
         # Step 3: Inference
         run_inference_logic(
