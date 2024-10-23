@@ -1,16 +1,16 @@
-# RibbitRadar
-
-RibbitRadar is an executable designed to accurately identify the presence of multiple frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data to recognize the unique calls of *Rana draytonii* and *Rana catesbeiana* amidst background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
-
 <p align="center">
+    <a href="https://app.gitbook.com/o/aNWUVTNAlFvz3xjN3vJ9/s/AyJT2U3IR01QuVCUVjpK/"><img alt="Docs" src="https://img.shields.io/badge/docs-GitBook-blue"></a>
     <a href="https://opensource.org/license/bsd-3-clause"><img alt="License: BSD 3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg"></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/issues"><img alt="Issue Badge" src="https://img.shields.io/github/issues/Tyler-Schwenk/RibbitRadar"></a>
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/pulls"><img alt="Pull requests Badge" src="https://img.shields.io/github/issues-pr/Tyler-Schwenk/RibbitRadar"></a>
 </p>
 
+# RibbitRadar
 
-# This README is out of date. Will be updated by 10/28
+RibbitRadar is a python-based application designed to accurately identify the presence of specific frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data, preforms inference, and generates reports with detailed information on detection. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-training)
+
+
 
 
 ## Table of Contents
@@ -23,14 +23,13 @@ RibbitRadar is an executable designed to accurately identify the presence of mul
 - [Contact](#contact)
 
 
-## Project Structure
+## Overview
 
-RibbitRadar will take the directory on your machine containing audio recordings from the field, as well as the name and location for your output file to be saved. After inputting this, the user only needs to click "Run Inference" and watch the application update them on the model locating all instances of *Rana Draytonii* vocalizations in their files. RibbitRadar will preprocess audio files, run them through the AST model, and output detailed analysis including detection times and environmental metadata in an Excel file at the location specified. The output file will contain information as below:
+Ribbit Radar is part of a broader project focused on automated frog call recognition. The application performs the following key tasks:
 
-| Model Name : Version | File Name     | Prediction | Times Heard (sec) | Device ID               | Timestamp                  | Temperature | Review Date |
-|----------------------|---------------|------------|-------------|-------------------------|----------------------------|-------------|-------------|
-| AST_Rana_Draytonii:2.0 | POND_19000 | Positive!   | 0-20, 40-60     | AudioMoth 249BC30461CBB1E6 | 19:00:00 01/12/2022 (UTC-8) | 9.3C        | 2023-07-22  |
-| AST_Rana_Draytonii:2.0 | POND_20500 | Negative   | N/A         | AudioMoth 249BC30461CBB1E6 | 20:50:00 01/12/2022 (UTC-8) | 9.1C        | 2023-07-22  |
+- Preprocessing: Converts audio files into a format suitable for model inference.
+- Inference: Uses pre-trained models to identify frog species in the recordings.
+- Reporting: Generates results in various report formats, providing both detailed and summary-level information.
 
 
 
