@@ -25,30 +25,26 @@ RibbitRadar is a python-based application designed to accurately identify the pr
 
 ## Overview
 
-Ribbit Radar is part of a broader project focused on automated frog call recognition. The application performs the following key tasks:
+Ribbit Radar is part of a broader project focused on automated frog call recognition. The application performs the following key tasks: 
 
 - Preprocessing: Converts audio files into a format suitable for model inference.
 - Inference: Uses pre-trained models to identify frog species in the recordings.
 - Reporting: Generates results in various report formats, providing both detailed and summary-level information.
 
+A more detailed flowchart of the application logic is [here](https://github.com/Tyler-Schwenk/RibbitRadar/blob/main/Ribbit_Radar.png)
+
 
 
 ## Getting Started
 
-To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies. If time is a constraint, my [Google Colab](https://github.com/tyler-schwenk/ast-rana-draytonii) version can provide increased speed if you pay for the use of Google's powerful GPUs or TPUs.
+To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies.
 
 ### Prerequisites
 
 - macOS or Windows operating system.
 - Audio recordings in WAV format to analyze.
 
-Before setting up the project, ensure that the following dependencies are installed:
-
-1. Python 3.x
-2. pip (Python package manager)
-3. Microsoft Visual C++ Redistributable (required for PyTorch and other packages)
-   - Download and install from [Microsoft's official site](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160)
-4. FFmpeg - (add details)
+### Running 
 
 
 ## Running RibbitRadar
