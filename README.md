@@ -1,4 +1,6 @@
-# RibbitRadar: Rana Draytonii Detection
+# RibbitRadar
+
+RibbitRadar is an executable designed to accurately identify the presence of multiple frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data to recognize the unique calls of *Rana draytonii* and *Rana catesbeiana* amidst background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
 
 <p align="center">
     <a href="https://opensource.org/license/bsd-3-clause"><img alt="License: BSD 3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg"></a>
@@ -12,7 +14,6 @@
 
 
 ## Table of Contents
-- [Introduction](#introduction)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Running RibbitRadar](#running-ribbitradar)
@@ -21,9 +22,6 @@
 - [Citing](#citing)
 - [Contact](#contact)
 
-## Introduction
-
-RibbitRadar is a hands-off software tool designed to accurately identify the presence of the endangered frog species, *Rana Draytonii*, within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer (AST), RibbitRadar processes raw audio data to recognize the unique calls of *Rana Draytonii* amidst various background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
 
 ## Project Structure
 
