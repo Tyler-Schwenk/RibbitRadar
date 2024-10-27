@@ -1,18 +1,19 @@
-# RibbitRadar: Rana Draytonii Detection
-
 <p align="center">
+    <a href="https://app.gitbook.com/o/aNWUVTNAlFvz3xjN3vJ9/s/AyJT2U3IR01QuVCUVjpK/"><img alt="Docs" src="https://img.shields.io/badge/docs-GitBook-blue"></a>
     <a href="https://opensource.org/license/bsd-3-clause"><img alt="License: BSD 3-Clause" src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg"></a>
     <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/issues"><img alt="Issue Badge" src="https://img.shields.io/github/issues/Tyler-Schwenk/RibbitRadar"></a>
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/pulls"><img alt="Pull requests Badge" src="https://img.shields.io/github/issues-pr/Tyler-Schwenk/RibbitRadar"></a>
 </p>
 
+# RibbitRadar
 
-# This README is out of date. Will be updated by 10/28
+RibbitRadar is a python-based application designed to accurately identify the presence of specific frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data, preforms inference, and generates reports with detailed information on detection. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-training)
+
+
 
 
 ## Table of Contents
-- [Introduction](#introduction)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Running RibbitRadar](#running-ribbitradar)
@@ -21,37 +22,29 @@
 - [Citing](#citing)
 - [Contact](#contact)
 
-## Introduction
 
-RibbitRadar is a hands-off software tool designed to accurately identify the presence of the endangered frog species, *Rana Draytonii*, within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer (AST), RibbitRadar processes raw audio data to recognize the unique calls of *Rana Draytonii* amidst various background noises. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-rana-draytonii)
+## Overview
 
-## Project Structure
+Ribbit Radar is part of a broader project focused on automated frog call recognition. The application performs the following key tasks: 
 
-RibbitRadar will take the directory on your machine containing audio recordings from the field, as well as the name and location for your output file to be saved. After inputting this, the user only needs to click "Run Inference" and watch the application update them on the model locating all instances of *Rana Draytonii* vocalizations in their files. RibbitRadar will preprocess audio files, run them through the AST model, and output detailed analysis including detection times and environmental metadata in an Excel file at the location specified. The output file will contain information as below:
+- Preprocessing: Converts audio files into a format suitable for model inference.
+- Inference: Uses pre-trained models to identify frog species in the recordings.
+- Reporting: Generates results in various report formats, providing both detailed and summary-level information.
 
-| Model Name : Version | File Name     | Prediction | Times Heard (sec) | Device ID               | Timestamp                  | Temperature | Review Date |
-|----------------------|---------------|------------|-------------|-------------------------|----------------------------|-------------|-------------|
-| AST_Rana_Draytonii:2.0 | POND_19000 | Positive!   | 0-20, 40-60     | AudioMoth 249BC30461CBB1E6 | 19:00:00 01/12/2022 (UTC-8) | 9.3C        | 2023-07-22  |
-| AST_Rana_Draytonii:2.0 | POND_20500 | Negative   | N/A         | AudioMoth 249BC30461CBB1E6 | 20:50:00 01/12/2022 (UTC-8) | 9.1C        | 2023-07-22  |
+A more detailed flowchart of the application logic is [here](https://github.com/Tyler-Schwenk/RibbitRadar/blob/main/Ribbit_Radar.png)
 
 
 
 ## Getting Started
 
-To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies. If time is a constraint, my [Google Colab](https://github.com/tyler-schwenk/ast-rana-draytonii) version can provide increased speed if you pay for the use of Google's powerful GPUs or TPUs.
+To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies.
 
 ### Prerequisites
 
 - macOS or Windows operating system.
 - Audio recordings in WAV format to analyze.
 
-Before setting up the project, ensure that the following dependencies are installed:
-
-1. Python 3.x
-2. pip (Python package manager)
-3. Microsoft Visual C++ Redistributable (required for PyTorch and other packages)
-   - Download and install from [Microsoft's official site](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160)
-4. FFmpeg - (add details)
+### Running 
 
 
 ## Running RibbitRadar
