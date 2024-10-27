@@ -19,9 +19,9 @@ def aggregate_results(file_predictions, metadata_dict, progress_callback, label_
         pd.DataFrame: A DataFrame containing both file-level and segment-level details of the predictions.
     """
     progress_callback(
-        "Inference Step 3/3: aggregating results...",
+        "Finishing Inference: aggregating results...",
         95,
-        "Inference Step 3/3: aggregating results...",
+        "Finishing Inference: aggregating results...",
     )
 
     results = []  # List to store both the summary and detailed segment information

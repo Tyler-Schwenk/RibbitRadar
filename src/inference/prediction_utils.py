@@ -49,8 +49,8 @@ def make_predictions(
     total_processed_files = 0
 
     progress_callback(
-        "Inference Step 2/3: Creating predictions...", 15,
-        "Inference Step 2/3: Creating predictions..."
+        "Running Inference: Creating predictions...", 15,
+        "Running Inference: Creating predictions..."
     )
     for i, batch in enumerate(data_loader):
         logging.debug(f"Batch {i+1}: Type - {type(batch)}, Length - {len(batch)}")
@@ -85,7 +85,7 @@ def make_predictions(
         total_processed_files += len(batch)
         percent_processed = total_processed_files / len(audio_files_dataset.files)
         progress_callback(
-            f"Inference Step 2/3: Creating predictions... {total_processed_files}/{len(audio_files_dataset.files)}",
+            f"Running Inference: Creating predictions... {total_processed_files}/{len(audio_files_dataset.files)}",
             int(percent_processed * 100)
         )
     return file_predictions
