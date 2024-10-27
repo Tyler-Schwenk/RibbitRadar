@@ -74,7 +74,10 @@ def make_predictions(
         for j, file_result in enumerate(result_output):
             file_index = total_processed_files + j
             audio_file = audio_files_dataset.files[file_index]
-            base_file_name = os.path.splitext(os.path.basename(audio_file))[0]
+            file_name = os.path.basename(audio_file)
+
+            # Extract base file name without segment info
+            base_file_name, _ = os.path.splitext(file_name.split("_segment")[0])
 
             prediction = determine_prediction(
                 file_result, radr_threshold, raca_threshold,
