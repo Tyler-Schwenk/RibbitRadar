@@ -1,0 +1,1 @@
+BATCH_SIZE = 32 # Batch size for the dataloader (used in perform inference)

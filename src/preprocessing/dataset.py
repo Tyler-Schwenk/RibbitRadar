@@ -3,7 +3,7 @@ import os
 import logging
 
 
-class RanaDraytoniiDataset(Dataset):
+class RibbitDataset(Dataset):
     def __init__(self, dir_path, transform=None):
         self.transform = transform
 
@@ -29,5 +29,5 @@ class RanaDraytoniiDataset(Dataset):
 
 
 def get_data_loader(directory, batch_size=32, shuffle=False):
-    dataset = RanaDraytoniiDataset(directory)
+    dataset = RibbitDataset(directory)
     return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)

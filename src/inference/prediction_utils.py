@@ -3,10 +3,11 @@ import torch
 import logging
 from collections import defaultdict
 import os
-from src.preprocessing.dataset import RanaDraytoniiDataset
+from src.preprocessing.dataset import RibbitDataset
 from src.preprocessing.dataset import get_data_loader
 import itertools
 import torch, torchaudio
+from config.parameters import BATCH_SIZE
 
 def perform_inference(
     audio_model, resampled_audio_dir, label_choice, radr_threshold,
@@ -29,8 +30,8 @@ def perform_inference(
     """
     progress_callback("Loading dataset...", 20, "Dataset loading.")
     
-    audio_files_dataset = RanaDraytoniiDataset(resampled_audio_dir, transform=make_features_fixed)
-    data_loader = get_data_loader(resampled_audio_dir, batch_size=32, shuffle=False)
+    audio_files_dataset = RibbitDataset(resampled_audio_dir, transform=make_features_fixed)
+    data_loader = get_data_loader(resampled_audio_dir, batch_size=BATCH_SIZE, shuffle=False)
 
     return make_predictions(
         data_loader, audio_model, audio_files_dataset, progress_callback,
