@@ -8,17 +8,17 @@
 
 # RibbitRadar
 
-RibbitRadar is a python-based application designed to accurately identify the presence of specific frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data, preforms inference, and generates reports with detailed information on detection. More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-training)
+RibbitRadar is a python-based application designed to accurately identify the presence of specific frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data, preforms inference, and generates reports with detailed information on detection.
+
+<!--- More details on the underlying machine-learning model can be found [here](https://github.com/tyler-schwenk/ast-training) --->
 
 
 
 
 ## Table of Contents
-- [Project Structure](#project-structure)
+- [Overview](#overview)
 - [Getting Started](#getting-started)
 - [Running RibbitRadar](#running-ribbitradar)
-- [Examples](#examples)
-- [Ideas for Improvement](#ideas-for-improvement)
 - [Citing](#citing)
 - [Contact](#contact)
 
@@ -30,47 +30,29 @@ Ribbit Radar is part of a broader project focused on automated frog call recogni
 - Preprocessing: Converts audio files into a format suitable for model inference.
 - Inference: Uses pre-trained models to identify frog species in the recordings.
 - Reporting: Generates results in various report formats, providing both detailed and summary-level information.
+- Features: Adjustable prediction mode, thresholds, and report formatting.
 
-A more detailed flowchart of the application logic is [here](https://github.com/Tyler-Schwenk/RibbitRadar/blob/main/Ribbit_Radar.png)
+A more detailed flowchart of the application logic is below
 
+![flowchart](Ribbit_Radar.png?raw=true "Title")
 
 
 ## Getting Started
 
-To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows, making it straightforward to run without needing to install Python or any dependencies.
+To use RibbitRadar, download the latest release from the [Releases](https://github.com/Tyler-Schwenk/ribbitradar/releases) page. The release includes a packaged application for macOS and Windows.
 
 ### Prerequisites
 
 - macOS or Windows operating system.
 - Audio recordings in WAV format to analyze.
 
-### Running 
-
 
 ## Running RibbitRadar
-
-### macOS
-
-1. Extract the RibbitRadar.zip file.
-2. Open the Terminal and navigate to the RibbitRadar directory.
-3. Run the application using the command:
-
-    ```bash
-    ./main
-    ```
-
-### Windows
 
 1. Extract the RibbitRadar.zip file.
 2. Navigate to the RibbitRadar directory.
 3. Double-click on `main.exe` to run the application.
 
-
-## Future Development
-
-- Expand the model to detect additional species relevant to Rana Draytonii's ecosystem.
-    - Given quality training data, this can be achieved with the current training pipeline    
-- Integrate geographical data to visualize call distributions over time and space.
 
 ## Citing  
 
