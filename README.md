@@ -17,6 +17,7 @@ RibbitRadar is a python-based application designed to accurately identify the pr
 
 ## Table of Contents
 - [Overview](#overview)
+- [Functionality](#functionality)
 - [Getting Started](#getting-started)
 - [Running RibbitRadar](#running-ribbitradar)
 - [Citing](#citing)
@@ -36,6 +37,13 @@ A more detailed flowchart of the application logic is below
 
 ![flowchart](Ribbit_Radar.png?raw=true "Title")
 
+## Functionality
+
+### Performance 
+ - Rana draytonii: Accuracy: 96.52% - Precision: 96.09% - Recall: 91.87%
+ - Rana catesbeiana: Accuracy: 94.60% - Precision: 95.61% - Recall: 82.43%
+
+Based on a test set of 10-second audio files with a split of 455 rana draytonii, 370 Rana catesbeiana, and 1111 Negative.
 
 ## Getting Started
 
