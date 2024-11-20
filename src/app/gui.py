@@ -16,20 +16,43 @@ class RibbitRadarGUI:
     update_queue (queue.Queue): A queue to manage the update of GUI elements.
     """
 
-    def __init__(self, root, resampled_audio_path):
+    def __init__(self, root, resampled_audio_path, log_file_path):
         """
-        Constructs the RibbitRadarGUI object and initializes the GUI widgets.
+        Initialize the GUI and log file path.
 
         Parameters:
         root (tk.Tk): The main window of the application.
         resampled_audio_path (str): Path to the directory where resampled audio files will be saved.
+        log_file_path (str): Path to the log file.
         """
         self.root = root
         self.resampled_audio_path = resampled_audio_path
+        self.log_file_path = log_file_path  # Store the log file path
         self.inference_callback = None
         self.create_widgets()
         self.update_queue = queue.Queue()
         self.check_queue()
+
+    def view_log_file(self):
+        """
+        Opens the log file using the default application for .log files.
+        If the file does not exist, display an error message.
+        """
+        if not os.path.exists(self.log_file_path):
+            messagebox.showerror("Error", "Log file not found.")
+            return
+
+        try:
+            if os.name == "nt":  # Windows
+                os.startfile(self.log_file_path)
+            elif os.name == "posix":  # macOS and Linux
+                subprocess.run(["open", self.log_file_path], check=True)
+            else:
+                messagebox.showerror(
+                    "Error", f"Unsupported OS: Unable to open log file."
+                )
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to open log file: {str(e)}")
 
     def set_inference_callback(self, callback):
         """
@@ -280,6 +303,14 @@ class RibbitRadarGUI:
             main_frame, height=10, state="disabled"
         )
         self.log_area.grid(column=0, row=9, columnspan=3, padx=10, pady=10)
+
+        # Add a "View Log File" button
+        view_log_button = ttk.Button(
+            self.root,
+            text="View Log File",
+            command=self.view_log_file  # Call the method to open the log file
+        )
+        view_log_button.grid(column=0, row=9, columnspan=2, pady=10)
 
         # Add a status label
         self.status_label = ttk.Label(main_frame, text="")

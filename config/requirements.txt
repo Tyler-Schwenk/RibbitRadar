@@ -56,3 +56,4 @@ uritemplate==4.1.1
 urllib3==2.2.3
 wget==3.2
 XlsxWriter==3.2.0
+platformdirs==4.3.6
