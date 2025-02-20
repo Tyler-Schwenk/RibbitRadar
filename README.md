@@ -6,6 +6,10 @@
     <a href="https://github.com/Tyler-Schwenk/RibbitRadar/pulls"><img alt="Pull requests Badge" src="https://img.shields.io/github/issues-pr/Tyler-Schwenk/RibbitRadar"></a>
 </p>
 
+### Project Update:
+
+Future developments will be using a custom Birdnet model for audio analysis. This repository will be archived
+
 # RibbitRadar
 
 RibbitRadar is a python-based application designed to accurately identify the presence of specific frog species within audio recordings. Leveraging my fine-tuned version of the Audio Spectrogram Transformer ([AST](https://github.com/YuanGongND/ast)), RibbitRadar processes audio data, preforms inference, and generates reports with detailed information on detection.
